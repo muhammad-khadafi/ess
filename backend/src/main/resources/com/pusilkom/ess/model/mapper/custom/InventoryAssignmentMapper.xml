@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.InventoryAssignmentMapper">
+    <resultMap id="InventoryAssignmentMap" type="com.pusilkom.ess.dto.table.InventoryAssignmentItem">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="employee_id" jdbcType="INTEGER" property="employeeId" />
+        <result column="inventory_id" jdbcType="INTEGER" property="inventoryId" />
+        <result column="start_date" jdbcType="DATE" property="startDate" />
+        <result column="end_date" jdbcType="DATE" property="endDate" />
+        <result column="start_date_string" jdbcType="VARCHAR" property="startDateString"/>
+        <result column="end_date_string" jdbcType="VARCHAR" property="endDateString"/>
+        <result column="employee_name" jdbcType="VARCHAR" property="employeeName"/>
+        <result column="employee__nik" jdbcType="VARCHAR" property="employeeNik"/>
+        <result column="inventory_name" jdbcType="VARCHAR" property="inventoryName"/>
+        <result column="inventory_type" jdbcType="VARCHAR" property="inventoryType"/>
+        <result column="is_assigned" jdbcType="BIT" property="isAssigned" />
+        <result column="id" jdbcType="INTEGER" property="id"/>
+    </resultMap>
+
+    <sql id="Main_Query">
+        SELECT ia.*, to_char(ia.start_date, 'DD-MM-YYYY') as start_date_string, to_char(ia.end_date, 'DD-MM-YYYY') as end_date_string,
+        e.name employee_name, e.nik employee_nik,
+        i.name inventory_name, i.type inventory_type
+        FROM inventory_assignment ia
+        left join employee e on ia.employee_id = e.id
+        left join inventory i on ia.inventory_id = i.id
+    </sql>
+
+    <sql id="Criteria_Where_Clause">
+        <where>
+            <if test="searchForm.employeeId != null">
+                AND ia.employee_id = #{searchForm.employeeId}
+            </if>
+            <if test="searchForm.inventoryId != null">
+                AND ia.inventory_id = #{searchForm.inventoryId}
+            </if>
+            <if test="searchForm.startDate != null">
+                AND to_char(ia.start_date, 'DD-MM-YYYY') = #{startDateString}
+            </if>
+            <if test="searchForm.endDate != null">
+                AND to_char(ia.end_date, 'DD-MM-YYYY') = #{endDateString}
+            </if>
+        </where>
+        ${searchForm.orderQuery}
+    </sql>
+
+    <sql id="getInventoryAssignmentItemByIdWhere">
+        <where>
+            AND ia.id = #{id}
+        </where>
+    </sql>
+
+    <select id="getListInventoryAssignmentItemBySearchForm" resultMap="InventoryAssignmentMap">
+        <include refid="Main_Query"/>
+        <include refid="Criteria_Where_Clause"/>
+
+        OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+    </select>
+
+    <select id="getTotalInventoryAssignmentItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+        SELECT COUNT(*) FROM
+        (
+        <include refid="Main_Query"/>
+        <include refid="Criteria_Where_Clause"/>
+        ) as foo
+    </select>
+
+    <select id="getInventoryAssignmentItemById" resultMap="InventoryAssignmentMap">
+        <include refid="Main_Query"/>
+        <include refid="getInventoryAssignmentItemByIdWhere"/>
+    </select>
+
+    <select id="getInventoryAssignmentItemByIdInventory" resultMap="InventoryAssignmentMap">
+        <include refid="Main_Query"/>
+        <where>
+            AND i.id = #{id}
+            AND ( ia.end_date >= now() - '1 day'::interval
+            or ia.end_date isnull )
+        </where>
+    </select>
+</mapper>

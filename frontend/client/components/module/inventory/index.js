@@ -1,0 +1,5 @@
+export InventoryParent from './InventoryParent'
+export InventoryForm from './InventoryForm'
+export InventoryList from './InventoryList'
+export InventoryEdit from './InventoryEdit'
+export InventoryView from './InventoryView'

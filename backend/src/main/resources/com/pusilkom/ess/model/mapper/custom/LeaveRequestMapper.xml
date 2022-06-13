@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.LeaveRequestMapper">
+  <resultMap id="CustomResultMap" type="com.pusilkom.ess.dto.table.LeaveRequestItem">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="employee_id" jdbcType="BIGINT" property="employeeId" />
+    <result column="leave_type_id" jdbcType="BIGINT" property="leaveTypeId" />
+    <result column="leave_type_id_string" jdbcType="VARCHAR" property="leaveTypeIdString" />
+    <result column="start_date" jdbcType="DATE" property="startDate" />
+    <result column="start_date_string" jdbcType="VARCHAR" property="startDateString" />
+    <result column="end_date" jdbcType="DATE" property="endDate" />
+    <result column="end_date_string" jdbcType="VARCHAR" property="endDateString" />
+    <result column="num_of_days" jdbcType="INTEGER" property="numOfDays" />
+    <result column="reason" jdbcType="VARCHAR" property="reason" />
+    <result column="status" jdbcType="VARCHAR" property="status" />
+    <result column="created_by" jdbcType="INTEGER" property="createdBy" />
+    <result column="created_date" jdbcType="DATE" property="createdDate" />
+    <result column="last_updated_by" jdbcType="INTEGER" property="lastUpdatedBy" />
+    <result column="last_updated_date" jdbcType="DATE" property="lastUpdatedDate" />
+    <result column="manager_id" jdbcType="BIGINT" property="managerId" />
+    <result column="deputy_director_id" jdbcType="BIGINT" property="deputyDirectorId" />
+    <result column="leave_date_detail" jdbcType="VARCHAR" property="leaveDateDetail" />
+    <result column="is_cancel" jdbcType="BIT" property="isCancel" />
+    <result column="doc_path" jdbcType="VARCHAR" property="docPath" />
+  </resultMap>
+
+  <resultMap id="TableResult" type="com.pusilkom.ess.dto.table.LeaveApprovalItem">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="employee_name" jdbcType="BIGINT" property="employeeName" />
+    <result column="leave_type_name" jdbcType="BIGINT" property="leaveTypeName" />
+    <result column="start_date" jdbcType="DATE" property="startDate" />
+    <result column="end_date" jdbcType="DATE" property="endDate" />
+    <result column="num_of_days" jdbcType="INTEGER" property="numOfDays" />
+    <result column="reason" jdbcType="VARCHAR" property="reason" />
+    <result column="status" jdbcType="VARCHAR" property="status" />
+    <result column="leave_date_detail" jdbcType="INTEGER" property="leaveDateDetail" />
+    <result column="manager_name" jdbcType="VARCHAR" property="managerName" />
+    <result column="deputy_director_name" jdbcType="VARCHAR" property="deputyDirectorName" />
+    </resultMap>
+
+  <select id="getApprovalList" parameterType="map" resultMap="TableResult">
+    select lr.id, e.name as employee_name, lt.leave_type_name, lr.start_date, lr.end_date, lr.num_of_days, reason, lr.status,
+    lr.leave_date_detail, e2.name as manager_name, e3.name as deputy_director_name
+    from leave_request lr join employee e on lr.employee_id = e.id
+    join leave_type lt on lr.leave_type_id = lt.id
+    join employee e2 on e2.id = lr.manager_id
+    join employee e3 on e3.id = lr.deputy_director_id
+    <include refid="Criteria_Where_Clause"/>
+  </select>
+
+  <select id="countApprovalList" parameterType="map" resultType="Long">
+    select count (*) from (
+    select lr.id, e.name as employee_name, lt.leave_type_name, lr.start_date, lr.end_date, lr.num_of_days, reason, lr.status,
+    lr.leave_date_detail, e2.name as manager_name, e3.name as deputy_director_name
+    from leave_request lr join employee e on lr.employee_id = e.id
+    join leave_type lt on lr.leave_type_id = lt.id
+    join employee e2 on e2.id = lr.manager_id
+    join employee e3 on e3.id = lr.deputy_director_id
+      <include refid="Criteria_Where_Clause"/>
+    ) as sub
+  </select>
+
+  <sql id="Main_Query">
+    select lt.leave_type_name as leave_type_id_string, TO_CHAR(lr.start_date, 'DD-MM-YYYY') as start_date_string,
+            TO_CHAR(lr.end_date, 'DD-MM-YYYY') as end_date_string, lr.*
+    from leave_request lr
+    left join leave_type lt on lr.leave_type_id = lt.id
+  </sql>
+
+  <sql id="Criteria_Where_Clause">
+    <where>
+      <if test="searchForm.employeeId != '' and searchForm.employeeId != null">
+        AND employee_id = #{searchForm.employeeId}
+      </if>
+      <if test="searchForm.leaveTypeId != '' and searchForm.leaveTypeId != null">
+        AND leave_type_id = #{searchForm.leaveTypeId}
+      </if>
+      <if test="searchForm.startDateStr != '' and searchForm.startDateStr != null">
+        AND to_char(lr.start_date, 'DD-MM-YYYY') = #{searchForm.startDateStr}
+      </if>
+      <if test="searchForm.endDateStr != '' and searchForm.endDateStr != null">
+        AND to_char(lr.end_date, 'DD-MM-YYYY') = #{searchForm.endDateStr}
+      </if>
+      <if test="searchForm.startDateString != '' and searchForm.startDateString != null">
+        AND to_char(lr.start_date, 'DD-MM-YYYY') = #{searchForm.startDateString}
+      </if>
+      <if test="searchForm.endDateString != '' and searchForm.endDateString != null">
+        AND to_char(lr.end_date, 'DD-MM-YYYY') = #{searchForm.endDateString}
+      </if>
+      <if test="searchForm.endDate != null">
+        AND end_date >= #{searchForm.endDate}
+      </if>
+      <if test="searchForm.status != '' and searchForm.status != null">
+        AND upper(status) = upper(#{searchForm.status})
+      </if>
+      <if test="searchForm.years != '' and searchForm.years != null">
+        AND extract(year from start_date) = #{searchForm.years}
+      </if>
+    </where>
+
+    ${searchForm.orderQuery}
+  </sql>
+
+  <select id="getRoleByUserId" parameterType="map" resultType="String">
+    select r.kode from userweb u
+    join userweb_has_role uhr on u.id = uhr.id_userweb
+    join role r on uhr.id_role = r.id where u.id = #{userId}
+  </select>
+
+  <select id="getListLeaveRequestItemBySearchForm" resultMap="CustomResultMap" parameterType="map">
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalLeaveRequestItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+    ) as foo
+  </select>
+
+  <select id="getListLeaveRequestItemByEmployeeIdandCode" parameterType="map" resultMap="CustomResultMap">
+    <include refid="Main_Query"/>
+    Where extract(year from start_date) = #{years}
+    AND employee_id = #{employeeId}
+    AND upper(lt.leave_type_code) ILIKE '%' || upper(#{codes}) || '%'
+  </select>
+
+</mapper>

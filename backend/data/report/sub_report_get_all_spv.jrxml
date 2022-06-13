@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.9.0.final using JasperReports Library version 6.9.0-cb8f9004be492ccc537180b49c026951f4220bf3  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sub_report_get_all_spv" columnCount="3" printOrder="Horizontal" pageWidth="595" pageHeight="842" columnWidth="150" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="3a4dd1b7-39e6-4175-8f5e-74b12ef4cbc5">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<parameter name="idEmployee" class="java.lang.Integer"/>
+	<parameter name="date_before" class="java.sql.Date"/>
+	<parameter name="date_after" class="java.sql.Date"/>
+	<queryString>
+		<![CDATA[select spv_assigned
+from log_activity_detail lad
+left join project_assignment pa on lad.project_assign_id = pa.id
+where pa.employee_id =  $P{idEmployee} 
+and lad."date" between $P{date_before} and  $P{date_after}
+and spv_assigned != 'No SPV'
+group by spv_assigned
+order by spv_assigned]]>
+	</queryString>
+	<field name="spv_assigned" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="spv_assigned"/>
+	</field>
+	<detail>
+		<band height="76" splitType="Stretch">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+			<textField>
+				<reportElement x="1" y="39" width="119" height="22" uuid="a78e463d-afde-4da6-8e30-f0d47f855631">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="f7ae160a-a38e-41ee-ad4d-276e745619b1"/>
+				</reportElement>
+				<textElement verticalAlignment="Bottom">
+					<font fontName="Calibri" size="10" isBold="true" isUnderline="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{spv_assigned}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="62" width="180" height="14" uuid="ee6462c0-7120-40e8-9693-49a38f71ed70"/>
+				<textElement>
+					<font fontName="Calibri" size="9"/>
+				</textElement>
+				<text><![CDATA[PT. Artajasa Pembayaran Elektronis]]></text>
+			</staticText>
+			<line>
+				<reportElement x="1" y="62" width="119" height="1" uuid="3a50f4d2-d016-441c-963b-cc19bd878064"/>
+				<graphicElement>
+					<pen lineWidth="0.6" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+		</band>
+	</detail>
+</jasperReport>

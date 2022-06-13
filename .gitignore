@@ -1,0 +1,13 @@
+syntax:glob
+
+subinclude:backend/.hgignore
+subinclude:frontend/.hgignore
+subinclude:ESSMobile/.hgignore
+
+.DS_Store
+.idea/**
+*.iml
+syntax: glob
+backend/data/report/temp/**
+backend/data/38.png
+backend/data/qrCode/**

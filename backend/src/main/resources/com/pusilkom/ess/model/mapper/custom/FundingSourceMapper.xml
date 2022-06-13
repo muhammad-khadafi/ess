@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.FundingSourceMapper">
+    <resultMap id="FundingSourceItemResultMap" type="com.pusilkom.ess.dto.table.FundingSourceItem">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="is_active" jdbcType="BOOLEAN" property="isActive" />
+    </resultMap>
+
+    <sql id="Main_Query">
+    SELECT id, name, case when is_active is null then true else is_active end as is_active FROM funding_source
+  </sql>
+    <sql id="Criteria_Where_Clause">
+        <where>
+            <if test="searchForm.name != null and searchForm.name != ''">
+                AND upper(name) LIKE '%' || upper(#{searchForm.name}) || '%'
+            </if>
+            <if test="searchForm.isActive != null">
+                AND is_active = #{searchForm.isActive}
+            </if>
+        </where>
+
+        ${searchForm.orderQuery}
+    </sql>
+
+    <select id="getListFundingSourceItemBySearchForm" resultMap="FundingSourceItemResultMap" parameterType="map">
+
+        <include refid="Main_Query"/>
+        <include refid="Criteria_Where_Clause"/>
+
+        OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+    </select>
+
+    <select id="getTotalFundingSourceItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+        SELECT COUNT(*) FROM
+        (
+        <include refid="Main_Query"/>
+        <include refid="Criteria_Where_Clause"/>
+        ) as foo
+    </select>
+
+</mapper>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.EmployeeFamilyMapper">
+  <resultMap id="EmployeeItemResultMap" type="com.pusilkom.ess.dto.table.EmployeeFamilyItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="employee_id" jdbcType="INTEGER" property="employeeId" />
+    <result column="nik" jdbcType="VARCHAR" property="nik" />
+    <result column="relation" jdbcType="VARCHAR" property="relation" />
+    <result column="birth_place" jdbcType="VARCHAR" property="birthPlace" />
+    <result column="birth_date" jdbcType="DATE" property="birthDate" />
+    <result column="phone_number" jdbcType="VARCHAR" property="phoneNumber" />
+  </resultMap>
+
+  <sql id="Main_Query">
+    SELECT * FROM employee_family
+  </sql>
+  <sql id="Criteria_Where_Clause">
+    <where>
+      <if test="searchForm.employeeId != null">
+        AND employee_id = #{searchForm.employeeId}
+      </if>
+    </where>
+
+    ${searchForm.orderQuery}
+  </sql>
+
+  <select id="getListEmployeeFamilyItemBySearchForm" resultMap="EmployeeItemResultMap" parameterType="map">
+
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalEmployeeFamilyItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+    ) as foo
+  </select>
+
+</mapper>

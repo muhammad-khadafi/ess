@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ReminderActivity">
+
+    <CheckBox
+        android:id="@+id/checkBoxClockInActive"
+        android:layout_width="78dp"
+        android:layout_height="33dp"
+        android:layout_marginTop="8dp"
+        android:clickable="true"
+        android:text="Active"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.372"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/timePickerClockIn" />
+
+    <CheckBox
+        android:id="@+id/checkBoxClockInSoundAlert"
+        android:layout_width="116dp"
+        android:layout_height="33dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginTop="8dp"
+        android:text="Sound Alert"
+        app:layout_constraintStart_toEndOf="@+id/checkBoxClockInActive"
+        app:layout_constraintTop_toBottomOf="@+id/timePickerClockIn" />
+
+    <TimePicker
+        android:id="@+id/timePickerClockIn"
+        android:layout_width="241dp"
+        android:layout_height="179dp"
+        android:timePickerMode="spinner"
+        app:layout_constraintBottom_toTopOf="@+id/checkBoxClockOutActive"
+        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_editor_absoluteX="84dp" />
+
+    <TimePicker
+        android:id="@+id/timePickerClockOut"
+        android:layout_width="241dp"
+        android:layout_height="179dp"
+        android:timePickerMode="spinner"
+        app:layout_constraintTop_toBottomOf="@+id/textView3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_editor_absoluteX="85dp"
+        tools:layout_editor_absoluteY="428dp" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:text="Reminder"
+        android:textSize="28sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Clock In Reminder"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteX="134dp"
+        />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="72dp"
+        android:text="Clock Out Reminder"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/checkBoxClockInActive" />
+
+    <CheckBox
+        android:id="@+id/checkBoxClockOutActive"
+        android:layout_width="78dp"
+        android:layout_height="33dp"
+        android:layout_marginBottom="16dp"
+        android:text="Active"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.372"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/timePickerClockOut"
+        app:layout_constraintVertical_bias="0.172" />
+
+    <CheckBox
+        android:id="@+id/checkBoxClockOutSoundAlert"
+        android:layout_width="116dp"
+        android:layout_height="33dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:text="Sound Alert"
+        app:layout_constraintTop_toBottomOf="@+id/timePickerClockOut"
+        app:layout_constraintStart_toEndOf="@+id/checkBoxClockOutActive"
+        tools:layout_editor_absoluteY="615dp"
+        app:layout_constraintHorizontal_bias="0.372"/>"/>
+
+    <TextView
+        android:id="@+id/tesText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="180dp"
+        app:layout_constraintStart_toEndOf="@+id/timePickerClockIn"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</android.support.constraint.ConstraintLayout>

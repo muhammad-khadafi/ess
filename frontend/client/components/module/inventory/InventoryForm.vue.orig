@@ -1,0 +1,300 @@
+<template>
+	<div>
+    <div class="box">
+      <div class="control is-horizontal">
+        <div class="control-label">
+          <label class="label">Type</label>
+        </div>
+        <div class="control is-grouped">
+          <div class="control is-expanded">
+            <div class="column is-one-third">
+              <basic-select :options="inventoryTypeList"
+                            :selected-option="inventoryTypeItem"
+                            placeholder="-- Please Select Type --"
+                            @select="onTypeSelect"
+                            :class="{'is-danger' : errors.type}">
+              </basic-select>
+            </div>
+          </div>
+          <div class="control" v-if="errors.name">
+            <span class="help is-danger">{{ errors.name }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="control is-horizontal">
+        <div class="control-label">
+          <label class="label">Name</label>
+        </div>
+        <div class="control is-grouped">
+          <div class="control is-expanded">
+            <div class="column is-one-third">
+            <input class="input" :class="{'is-danger' : errors.name}"
+                    type="text" v-model="cmd.name" placeholder="Name" @input="validateTidakKosong('name', cmd.name)"/>
+            </div>
+          </div>
+          <div class="control" v-if="errors.name">
+            <span class="help is-danger">{{ errors.name }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="control is-horizontal">
+        <div class="control-label">
+          <label class="label">Specification</label>
+        </div>
+        <div class="control is-grouped">
+          <div class="control is-expanded">
+            <div class="column is-one-third">
+            <textarea class="textarea" :class="{'is-danger' : errors.specification}"
+                    type="text" v-model="cmd.specification" placeholder="Specification"/>
+            </div>
+          </div>
+          <div class="control" v-if="errors.specification">
+            <span class="help is-danger">{{ errors.specification }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="control is-horizontal">
+        <div class="control-label">
+          <label class="label">Location</label>
+        </div>
+        <div class="control is-grouped">
+          <div class="control is-expanded">
+            <div class="column is-one-third">
+            <input class="input" :class="{'is-danger' : errors.location}"
+                    type="text" v-model="cmd.location" placeholder="Location"/>
+            </div>
+          </div>
+          <div class="control" v-if="errors.location">
+            <span class="help is-danger">{{ errors.location }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="control is-horizontal">
+        <div class="control-label">
+          <label class="label">Purchase Date</label>
+        </div>
+        <div class="control is-grouped">
+          <div class="control is-expanded">
+            <div class="column is-one-third">
+            <datepicker v-model="cmd.purchaseDate" input-class="input" format="dd-MM-yyyy"
+                        placeholder="Purchase Date"
+                        @selected="selectedTanggal($event)"
+                        @cleared="clearedTanggal($event)"
+                        :clear-button="clearButton"></datepicker>
+            </div>
+            <!-- <input class="input" :class="{'is-danger' : errors.purchaseDateString}"
+                    type="text" v-model="cmd.purchaseDateString" placeholder="Purchase Date"/> -->
+          </div>
+          <div class="control" v-if="errors.purchaseDateString">
+            <span class="help is-danger">{{ errors.purchaseDateString }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="control is-horizontal">
+        <div class="control-label">
+          <label class="label">Purchase Price</label>
+        </div>
+        <div class="control is-grouped">
+          <div class="control is-expanded">
+            <div class="column is-one-third">
+              <!-- <div v-if="visible === true"> -->
+            <input class="input" :class="{'is-danger' : errors.purchasePrice}"
+                    type="number" v-on:keypress="onBlurNumber()" v-model="cmd.purchasePrice" placeholder="Purchase Price"/>
+            </div>
+          </div>
+          <div class="control" v-if="errors.purchasePrice">
+            <span class="help is-danger">{{ errors.purchasePrice }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="control is-horizontal">
+        <div class="control-label">
+          <label class="label">Condition</label>
+        </div>
+        <div class="control is-grouped">
+          <div class="control is-expanded">
+            <div class="column is-one-third">
+            <input class="input" :class="{'is-danger' : errors.condition}"
+                    type="text" v-model="cmd.condition" placeholder="Condition"/>
+            </div>
+          </div>
+          <div class="control" v-if="errors.condition">
+            <span class="help is-danger">{{ errors.condition }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- <div class="control is-horizontal">
+        <div class="control-label">
+          <label class="label">Is Assigned ? </label>
+        </div>
+        <div class="control is-grouped">
+          <div class="control is-expanded">
+            <input class="checkbox" :class="{'is-danger' : errors.isAssigned}"
+                    type="checkbox" v-model="cmd.isAssigned"/>
+          </div>
+          <div class="control" v-if="errors.isAssigned">
+            <span class="help is-danger">{{ errors.isAssigned }}</span>
+          </div>
+        </div>
+      </div> -->
+
+      <div class="control is-horizontal">
+        <div class="control-label">
+          <label class="label"></label>
+        </div>
+        <div class="control is-grouped">
+          <div class="control">
+            <button class="button is-info" @click="submit()">
+              <span>Save</span>
+            </button>
+          </div>
+          <div class="control">
+            <button class="button is-warning" @click="cancel()">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+	</div>
+</template>
+
+<script>
+import axios from 'axios'
+import _ from 'lodash'
+import ValidationMixin from '../../mixin/ValidationMixin'
+import bus from 'src/shared/bus'
+import Datepicker from 'vuejs-datepicker'
+import { BasicSelect } from 'vue-search-select'
+
+export default {
+  components: {
+    BasicSelect,
+    Datepicker
+  },
+  mixins: [ValidationMixin],
+  props: {
+    id: {
+      type: Number
+    }
+  },
+  data () {
+    return {
+      errorSelect: true,
+      clearButton: true,
+      separator: true,
+      cmd: {
+        isNew: true,
+        id: null,
+        type: null,
+        name: null,
+        specification: null,
+        location: null,
+        purchaseDateString: null,
+        purchaseDate: null,
+        purchasePrice: null,
+        condition: null,
+        isAssigned: false,
+        notes: null
+      },
+      inventoryTypeList: [],
+      inventoryTypeItem: {
+        value: '',
+        text: ''
+      },
+      errors: {}
+    }
+  },
+  mounted () {
+    console.log('INVENTORY FORM CREATED')
+  },
+  created () {
+    this.fetchData()
+  },
+  methods: {
+    fetchData () {
+      axios.all([
+        axios.get('/master-reference/getReference/Inventory Type')
+      ]).then(axios.spread((inventoryTypeList) => {
+        for (let inventoryType of inventoryTypeList.data) {
+          this.inventoryTypeList.push({value: inventoryType.id, text: inventoryType.name})
+        }
+      }))
+    },
+    onTypeSelect (item) {
+      this.errorSelect = false
+      this.inventoryTypeItem = item
+      this.cmd.type = item.value
+    },
+    submit () {
+      this.validateAll()
+      bus.$emit('SHOW_LOADING')
+      for (var field in this.errors) {
+        if (this.errors[field] !== null) {
+          bus.$emit('HIDE_LOADING')
+          return
+        }
+      }
+      axios.post('/inventory', this.cmd)
+        .then((resp) => {
+          bus.$emit('HIDE_LOADING')
+          console.log('SUCCESS')
+          console.log(resp)
+          this.$router.replace('/inventory')
+          bus.$emit('NOTIFY', 'success', 'Berhasil menyimpan data')
+        })
+        .catch((error) => {
+          bus.$emit('HIDE_LOADING')
+          console.log('ERROR : ', error)
+          console.log('isi dari error', error.response)
+          _.each(error.response.data.errors, function (value) {
+            this.$set(this.errors, value.field, value.message)
+          })
+        })
+    },
+    validateTidakKosong (field, value) {
+      this.validateNotBlank(field, value)
+    },
+    validateAll () {
+      this.validateNotBlank('type', this.cmd.type)
+      this.validateNotBlank('name', this.cmd.name)
+    },
+    cancel () {
+      console.log('CANCEL')
+      this.$router.push('/inventory')
+    },
+    selectedTanggal (event) {
+      if (event !== null) {
+        this.cmd.purchaseDateString = (event.getDate() < 10 ? '0' + event.getDate() : event.getDate()) + '-' + (event.getMonth() + 1 < 10 ? ('0' + (event.getMonth() + 1)) : (event.getMonth() + 1)) + '-' + event.getFullYear()
+      }
+    },
+    clearedTanggal (event) {
+      this.cmd.purchaseDateString = null
+    },
+    onBlurNumber () {
+      this.cmd.purchasePrice = this.formatRupiah(this.cmd.purchasePrice)
+    },
+    formatRupiah (angka, prefix) {
+      var number = angka.replace(/[^,\d]/g, '').toString()
+      var split = number.split(',')
+      var sisa = split[0].length % 3
+      var rupiah = split[0].substr(0, sisa)
+      var ribuan = split[0].substr(sisa).match(/\d{3}/gi)
+
+      // tambahkan titik jika yang di input sudah menjadi angka ribuan
+      if (ribuan) {
+        this.separator = sisa ? '.' : ''
+        rupiah += this.separator + ribuan.join('.')
+      }
+
+      rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah
+      return prefix === undefined ? rupiah : (rupiah ? 'Rp. ' + rupiah : '.')
+    }
+  }
+}
+</script>

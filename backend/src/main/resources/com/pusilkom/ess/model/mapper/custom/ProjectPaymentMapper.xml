@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.ProjectPaymentMapper">
+  <resultMap id="CustomResultMap" type="com.pusilkom.ess.dto.table.ProjectPaymentItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="contract_id" jdbcType="INTEGER" property="contractId" />
+    <result column="contract_number" jdbcType="VARCHAR" property="projectContractName" />
+    <result column="term" jdbcType="INTEGER" property="term" />
+    <result column="percentage" jdbcType="INTEGER" property="percentage" />
+    <result column="value" jdbcType="INTEGER" property="value" />
+    <result column="due_date" jdbcType="DATE" property="dueDate" />
+    <result column="due_date_string" jdbcType="VARCHAR" property="dueDateString" />
+    <result column="is_paid" jdbcType="BIT" property="isPaid" />
+    <result column="is_paid_string" jdbcType="VARCHAR" property="isPaidString" />
+    <result column="notes" jdbcType="VARCHAR" property="notes" />
+    <result column="created_date" jdbcType="TIMESTAMP" property="createdDate" />
+    <result column="created_by" jdbcType="INTEGER" property="createdBy" />
+    <result column="updated_date" jdbcType="TIMESTAMP" property="updatedDate" />
+    <result column="updated_by" jdbcType="INTEGER" property="updatedBy" />
+  </resultMap>
+
+  <select id="getListProjectPaymentItemBySearchForm" resultMap="CustomResultMap" parameterType="map">
+    select c.contract_number, p.*, TO_CHAR(due_date, 'DD-MM-YYYY') as due_date_string,
+           case
+             when is_paid='true' then 'yes'
+             when is_paid='false' then 'no'
+             end as is_paid_string
+    from project_payment p
+    left join project_contract c on p.contract_id = c.id
+    <where>
+      <if test="searchForm.contractId != '' and searchForm.contractId != null">
+        AND contract_id = #{searchForm.contractId}
+      </if>
+      <if test="searchForm.term != '' and searchForm.term != null">
+        AND term = #{searchForm.term}
+      </if>
+      <if test="searchForm.percentage != '' and searchForm.percentage != null">
+        AND percentage = #{searchForm.percentage}
+      </if>
+      <if test="searchForm.value != '' and searchForm.value != null">
+        AND value = #{searchForm.value}
+      </if>
+      <if test="searchForm.payment != null">
+        AND is_paid = #{searchForm.payment}
+      </if>
+      <if test="searchForm.notes != '' and searchForm.notes != null">
+        AND upper(notes) LIKE '%' || upper(#{searchForm.notes}) || '%'
+      </if>
+      <if test="searchForm.dueDateString != null and searchForm.dueDateString != ''">
+        AND to_char(due_date, 'DD-MM-YYYY') = #{searchForm.dueDateString}
+      </if>
+    </where>
+
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalProjectPaymentItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+      project_payment
+  </select>
+
+  <select id="getDetailProjectPaymentItemBySearchForm" resultMap="CustomResultMap" parameterType="map">
+    select c.contract_number, p.*, TO_CHAR(due_date, 'DD-MM-YYYY') as due_date_string
+    from project_payment p
+    left join project_contract c on p.contract_id = c.id
+    where p.id = #{id}
+  </select>
+
+
+</mapper>
+
+

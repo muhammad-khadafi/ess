@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.InventoryMapper">
+    <resultMap id="InventoryMap" type="com.pusilkom.ess.dto.table.InventoryItem">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="type" jdbcType="INTEGER" property="type" />
+        <result column="typeString" jdbcType="VARCHAR" property="typeString" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="location" jdbcType="VARCHAR" property="location" />
+        <result column="specification" jdbcType="VARCHAR" property="specification" />
+        <result column="inventory_code" jdbcType="VARCHAR" property="inventoryCode" />
+        <result column="purchase_price" jdbcType="INTEGER" property="purchasePrice" />
+        <result column="purchase_date" jdbcType="DATE" property="purchaseDate" />
+        <result column="purchase_date_string" jdbcType="VARCHAR" property="purchaseDateString"/>
+        <result column="condition" jdbcType="VARCHAR" property="condition" />
+        <result column="is_assigned" jdbcType="BIT" property="isAssigned" />
+    </resultMap>
+    <sql id="Main_Query">
+        SELECT m.name as typeString, i.*, TO_CHAR(purchase_date, 'DD-MM-YYYY') as purchase_date_string
+        FROM inventory i
+        LEFT JOIN master_reference m on i."type" = m.id
+    </sql>
+    <sql id="Criteria_Where_Clause">
+        <where>
+            <if test="searchForm.type != null and searchForm.type != ''">
+                AND i.type = #{searchForm.type}
+            </if>
+            <if test="searchForm.name != null and searchForm.name != ''">
+                AND upper(i.name) LIKE '%' || upper(#{searchForm.name}) || '%'
+            </if>
+            <if test="searchForm.condition != null and searchForm.condition != ''">
+                AND upper(condition) LIKE '%' || upper(#{searchForm.condition}) || '%'
+            </if>
+            <if test="searchForm.location != null and searchForm.location != ''">
+                AND upper(location) LIKE '%' || upper(#{searchForm.location}) || '%'
+            </if>
+            <if test="searchForm.isAssigned != null and searchForm.isAssigned == 'yes'">
+                AND i.is_assigned = true
+            </if>
+            <if test="searchForm.isAssigned != null and searchForm.isAssigned == 'no'">
+                AND is_assigned = false
+            </if>
+            <if test="searchForm.purchaseDateString != null and searchForm.purchaseDateString != ''">
+                AND to_char(i.purchase_date, 'DD-MM-YYYY') = #{searchForm.purchaseDateString}
+            </if>
+        </where>
+
+        ${searchForm.orderQuery}
+    </sql>
+    <select id="getListInventoryItemBySearchForm" resultMap="InventoryMap">
+        <include refid="Main_Query"/>
+        <include refid="Criteria_Where_Clause"/>
+
+        OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+    </select>
+    <select id="getTotalInventoryItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+        SELECT COUNT(*) FROM
+        (
+        <include refid="Main_Query"/>
+        <include refid="Criteria_Where_Clause"/>
+        ) as foo
+    </select>
+    <select id="getListInventoryItemAll" resultMap="InventoryMap">
+        <include refid="Main_Query"/>
+        order by i.id asc
+    </select>
+    <select id="getDetailInventoryItemByIdInventory" resultMap="InventoryMap">
+        <include refid="Main_Query"/>
+        where i.id = #{inventoryId}
+    </select>
+    <select id="getLastInventoryCode" resultMap="InventoryMap">
+        SELECT *
+        FROM inventory
+        WHERE inventory_code LIKE #{inventoryCode} || '%'
+        ORDER BY id DESC
+        LIMIT 1
+    </select>
+</mapper>

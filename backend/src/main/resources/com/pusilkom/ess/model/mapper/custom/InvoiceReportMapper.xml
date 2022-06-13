@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.InvoiceReportMapper">
+  <resultMap id="CustomResultMap" type="com.pusilkom.ess.dto.table.InvoiceReportItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="start_date" jdbcType="DATE" property="startDate" />
+    <result column="end_date" jdbcType="DATE" property="endDate" />
+    <result column="sub_project_id" jdbcType="INTEGER" property="subProjectId" />
+    <result column="supervisor_name" jdbcType="VARCHAR" property="supervisorName" />
+    <result column="path" jdbcType="VARCHAR" property="path" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="startDateString" jdbcType="VARCHAR" property="startDateString" />
+    <result column="endDateString" jdbcType="VARCHAR" property="endDateString" />
+    <result column="total" jdbcType="INTEGER" property="total" />
+  </resultMap>
+
+  <resultMap id="CustomResultMap2" type="com.pusilkom.ess.dto.table.LogActivityDetailItem">
+    <result column="sub_project_name" jdbcType="VARCHAR" property="subProjectName" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+  </resultMap>
+
+  <sql id="Criteria_Where_Clause">
+    <where>
+    <if test="searchForm.subProjectId != null and searchForm.subProjectId != ''">
+      AND sub_project_id = #{searchForm.subProjectId}
+    </if>
+    <if test="searchForm.supervisorName != null and searchForm.supervisorName != ''">
+      AND upper(supervisor_name) LIKE '%' || upper(#{searchForm.supervisorName}) || '%'
+    </if>
+    <if test="searchForm.startDateString != null and searchForm.startDateString != ''">
+      AND to_char(start_date, 'DD-MM-YYYY') = #{searchForm.startDateString}
+    </if>
+    <if test="searchForm.endDateString != null and searchForm.endDateString != ''">
+      AND to_char(end_date, 'DD-MM-YYYY') = #{searchForm.endDateString}
+    </if>
+    </where>
+  </sql>
+
+  <select id="getListInvoiceReportItemBySearchForm" resultMap="CustomResultMap" parameterType="map">
+    select sp.sub_project_name as name, TO_CHAR(start_date, 'DD-Month-YYYY') as startDateString, TO_CHAR(end_date, 'DD-Month-YYYY') as endDateString, ir.*
+    from invoice_report ir
+    left join sub_project sp on ir.sub_project_id = sp.id
+    <include refid="Criteria_Where_Clause"/>
+    order by ir.start_date
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalInvoiceReportItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    select COUNT (ir.*)
+    from invoice_report ir
+    <include refid="Criteria_Where_Clause"/>
+  </select>
+
+  <select id="getTotalInvoice" resultType="java.lang.Long" parameterType="map">
+    select sum(foo.total) from
+    (select (lr.rate * 8 * round((sum(lad.duration)::decimal / 8), 3) + (lr.rate * 8 *(2 * round((sum(lad.overtime)::decimal / 8), 3)))) as total
+    from (select * from log_activity_detail
+    join sub_project
+    on log_activity_detail.sub_pro_id = sub_project.id
+    join project_assignment
+    on log_activity_detail.project_assign_id = project_assignment.id
+    join master_reference spv
+    on sub_project.supervisor = spv.id and spv.reference_type = 'Supervisor'
+    where
+    date between  #{invoiceReport.startDate}  and  #{invoiceReport.endDate}
+    AND
+    ( #{invoiceReport.supervisorName}::VARCHAR is null or spv.name =  #{invoiceReport.supervisorName} )
+    AND
+    ( #{invoiceReport.subProjectId}::INTEGER  is null or log_activity_detail.sub_pro_id = #{invoiceReport.subProjectId} )
+    ) as lad
+    join sub_project sp on lad.sub_pro_id = sp.id
+    join project_assignment pa on lad.project_assign_id = pa.id
+    join employee e on e.id = pa.employee_id
+    join master_reference l on pa.level_id = l.id and l.reference_type = 'Level'
+    join level_rate lr on lr.level_id = l.id
+    where
+    sp.sub_project_name =   #{subProjectName}
+    and
+    sp.code =  #{code}
+    and
+    #{invoiceReport.startDate} between lr.start_date and lr.end_date
+    GROUP BY e.name, l.name, lr.rate) as foo
+  </select>
+
+  <select id="getSubProjectCodeAndName" resultMap="CustomResultMap2" parameterType="map">
+    select DISTINCT code, sub_project_name
+      from log_activity_detail
+        join sub_project
+        on log_activity_detail.sub_pro_id = sub_project.id
+        join master_reference as spv
+        on sub_project.supervisor = spv.id and spv.reference_type = 'Supervisor'
+      where
+    	date between #{invoiceReport.startDate}  and  #{invoiceReport.endDate}
+      	AND
+      	( #{invoiceReport.supervisorName}::VARCHAR is null or spv.name =  null )
+      	AND
+      	( #{invoiceReport.subProjectId}::INTEGER is null or log_activity_detail.sub_pro_id = null )
+  </select>
+</mapper>
+
+

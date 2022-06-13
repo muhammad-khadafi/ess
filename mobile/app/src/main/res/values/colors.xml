@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#444444</color>
+    <color name="colorPrimaryDark">#CD5C5C</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="colorGraylight">#FAFAFA</color>
+    <color name="colorStartRed">#CD5C5C</color>
+    <color name="colorEndRed">#F08080</color>
+    <color name="colorcadetblue">#5F9EAD</color>
+    <color name="colorGreen">#007065</color>
+    <color name="colorBlueTosca">#00a79d</color>
+    <color name="colorDarkYellow">#ffdd67</color>
+    <color name="colorLightYellow">#ffffc5</color>
+    <color name="colorRed">#cf455c</color>
+    <color name="colorOrange">#ff8a5c</color>
+    <color name="colorDarkestYellow">#f7b71d</color>
+    <color name="colorAzur">#F1F5F8</color>
+    <color name="colorWhite">#FFFFFF</color>
+
+    <color name="textcolorHeader">#069ECF</color>
+    <color name="textColorPrimary">#000000</color>
+    <color name="textColorSecondary">#A5A5A5</color>
+
+    <!--switch color-->
+
+    <color name="thumb_active">#069ECF</color>
+    <color name="track_active">#66069ECF</color>
+
+    <color name="thumb_inactive">#A5A5A5</color>
+    <color name="track_inactive">#66A5A5A5</color>
+
+</resources>

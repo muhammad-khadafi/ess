@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.LevelRateMapper">
+  <resultMap id="CustomResultMap" type="com.pusilkom.ess.dto.table.LevelRateItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="level_name" jdbcType="VARCHAR" property="levelName" />
+    <result column="level_id" jdbcType="VARCHAR" property="levelId" />
+    <result column="start_date_string" jdbcType="VARCHAR" property="startDateString" />
+    <result column="end_date_string" jdbcType="VARCHAR" property="endDateString" />
+    <result column="rate" jdbcType="INTEGER" property="rate" />
+  </resultMap>
+
+  <sql id="Main_Query">
+    select lr.id as id, mr.name as level_name, lr.rate as rate,
+    to_char(lr.start_date, 'DD-MM-YYYY') as start_date_string,
+    to_char(lr.end_date, 'DD-MM-YYYY') as end_date_string
+    from level_rate lr
+    left join master_reference mr on lr.level_id = mr.id
+  </sql>
+
+  <sql id="Criteria_Where_Clause">
+    <where>
+      <if test="searchForm.levelId != '' and searchForm.levelId != null">
+        AND lr.level_id = #{searchForm.levelId}
+      </if>
+      <if test="searchForm.rate != '' and searchForm.rate != null">
+        AND lr.rate = #{searchForm.rate}
+      </if>
+      <if test="searchForm.startDateString != '' and searchForm.startDateString != null">
+        AND to_char(lr.start_date, 'DD-MM-YYYY') = #{searchForm.startDateString}
+      </if>
+      <if test="searchForm.endDateString != '' and searchForm.endDateString != null">
+        AND to_char(lr.end_date, 'DD-MM-YYYY') = #{searchForm.endDateString}
+      </if>
+    </where>
+
+    ${searchForm.orderQuery}
+  </sql>
+
+  <select id="getListLevelRateBySearchForm" resultMap="CustomResultMap" parameterType="map">
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalLevelRateItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+    ) as foo
+  </select>
+
+  <select id="getLevelRateById" resultMap="CustomResultMap" parameterType="map">
+
+    select lr.id as id, lr.level_id as level_id, m.name as level_name, lr.rate as rate, lr.start_date as startDate, lr.end_date as endDate,
+    TO_CHAR(start_date, 'DD-MM-YYYY') as start_date_string, TO_CHAR(end_date, 'DD-MM-YYYY') as end_date_string
+    from level_rate lr
+    left join master_reference m on lr.level_id = m.id
+    where lr.id = #{levelRateId}
+  </select>
+
+</mapper>
+
+

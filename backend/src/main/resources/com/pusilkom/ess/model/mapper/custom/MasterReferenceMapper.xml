@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.MasterReferenceMapper">
+  <resultMap id="CustomResultMap" type="com.pusilkom.ess.model.MasterReference">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="category" jdbcType="VARCHAR" property="category" />
+    <result column="reference_type" jdbcType="VARCHAR" property="referenceType" />
+  </resultMap>
+
+  <sql id="Main_Query">
+    select * from master_reference
+  </sql>
+
+  <sql id="Criteria_Where_Clause">
+    <where>
+      <if test="searchForm.name != '' and searchForm.name != null">
+        AND upper(name) LIKE '%' || upper(#{searchForm.name}) || '%'
+      </if>
+      <if test="searchForm.category != '' and searchForm.category != null">
+        AND upper(category) LIKE '%' || upper(#{searchForm.category}) || '%'
+      </if>
+      <if test="searchForm.referenceType != '' and searchForm.referenceType != null">
+        AND upper(reference_type) LIKE '%' || upper(#{searchForm.referenceType}) || '%'
+      </if>
+    </where>
+
+  </sql>
+
+  <select id="getListMasterReferenceItemBySearchForm" resultMap="CustomResultMap" parameterType="map">
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+    order by reference_type, name asc
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+
+  </select>
+
+  <select id="getTotalMasterReferenceItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+    ) as foo
+  </select>
+
+
+</mapper>
+
+

@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.9.0.final using JasperReports Library version 6.9.0-cb8f9004be492ccc537180b49c026951f4220bf3  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="invoice_sub_report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="8" bottomMargin="0" whenResourceMissingType="Error" uuid="575ef499-50f4-49e8-bc36-50f73aa39a99">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Pre Production ESS"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="367"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="622"/>
+	<parameter name="subProName" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="subProCode" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="date_before" class="java.sql.Date"/>
+	<parameter name="date_after" class="java.sql.Date"/>
+	<parameter name="SpvName" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="sub_project" class="java.lang.Integer"/>
+	<parameter name="idEmployee" class="java.lang.Integer"/>
+	<parameter name="employeeName" class="java.lang.String"/>
+	<parameter name="role" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select sp.sub_project_name, sp.code, round((sum(lad.duration)::decimal / 8), 3) as n, round((sum(lad.overtime)::decimal / 8), 3) as ot
+from log_activity_detail lad 
+left join project_assignment pa on lad.project_assign_id = pa.id
+left join sub_project sp on lad.sub_pro_id = sp.id
+where pa.employee_id =  $P{idEmployee} 
+and lad."date" between $P{date_before} and $P{date_after}
+and ( $P{sub_project} is null or sp.id = $P{sub_project} )
+group by sp.code, sp.sub_project_name]]>
+	</queryString>
+	<field name="sub_project_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sub_project_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="sub_project"/>
+	</field>
+	<field name="code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="sub_project"/>
+	</field>
+	<field name="n" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.label" value="n"/>
+	</field>
+	<field name="ot" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.label" value="ot"/>
+	</field>
+	<variable name="totalDuration" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{n}]]></variableExpression>
+	</variable>
+	<variable name="totalOT" class="java.lang.Double" calculation="Sum">
+		<variableExpression><![CDATA[$F{ot}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Prevent"/>
+	</background>
+	<title>
+		<band splitType="Prevent"/>
+	</title>
+	<pageHeader>
+		<band splitType="Prevent"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="24" splitType="Prevent">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<staticText>
+				<reportElement x="430" y="0" width="60" height="24" uuid="232c351e-dabc-4b03-bc6b-7a2fe3678b17">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[N]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="490" y="0" width="63" height="24" uuid="a44faae3-05d3-4fb0-b464-59d1676b7301">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<text><![CDATA[OT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="5" y="0" width="44" height="24" uuid="90ac5cae-44bf-4163-92ed-8b02c0aec3f2">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7ad5c408-6562-4eec-84cd-118e89a2f706"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="1.0"/>
+					<rightPen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="false"/>
+					<paragraph leftIndent="3"/>
+				</textElement>
+				<text><![CDATA[Name :]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" x="286" y="0" width="144" height="24" uuid="7ff75e89-aa9d-4f99-8fd0-dbaa8b5d3412">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7ad5c408-6562-4eec-84cd-118e89a2f706"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="1.0"/>
+					<leftPen lineWidth="0.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<paragraph leftIndent="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Role :  " + $P{role}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="49" y="0" width="237" height="24" uuid="c2e046bb-4f5c-4582-af7c-df09069b13d3">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7ad5c408-6562-4eec-84cd-118e89a2f706"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<paragraph leftIndent="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{employeeName}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="28" splitType="Prevent">
+			<textField>
+				<reportElement stretchType="ContainerHeight" x="5" y="0" width="425" height="28" uuid="90ac9c58-9044-4bca-915b-0aea323e379c">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA["  "+ $F{code}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="430" y="0" width="60" height="28" uuid="243415f2-26b5-44c7-9bf6-3bffa7638f1a">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[(new java.text.DecimalFormat("#,##0.000").format(Double.valueOf($F{n}))).replace('.', ',')]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="490" y="0" width="63" height="28" uuid="a7858354-6545-4227-9633-af4a2cc097b6">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[(new java.text.DecimalFormat("#,##0.000").format(Double.valueOf($F{ot}))).replace('.', ',')]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band splitType="Prevent"/>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="18" splitType="Prevent">
+			<staticText>
+				<reportElement x="5" y="0" width="425" height="18" uuid="3ffa61df-836a-46a7-9aad-d7d451c63253"/>
+				<box rightPadding="8">
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="430" y="0" width="60" height="18" uuid="daee49fa-e0ca-445d-8c63-81adf131ccf6"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{totalDuration} != null ? (new java.text.DecimalFormat("#,##0.000").format(Double.valueOf($V{totalDuration}))).replace('.', ',') : " "]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="490" y="0" width="63" height="18" uuid="a13bb7b6-52d2-447e-b866-b3911148f60c"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{totalOT} != null ?  (new java.text.DecimalFormat("#,##0.000").format(Double.valueOf($V{totalOT} ))).replace('.', ',') : " "]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band splitType="Prevent"/>
+	</summary>
+</jasperReport>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.SubProjectMapper">
+  <resultMap id="CustomResultMap" type="com.pusilkom.ess.dto.table.SubProjectItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="project_id" jdbcType="INTEGER" property="projectId" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+    <result column="sub_project_name" jdbcType="VARCHAR" property="subProjectName" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+    <result column="supervisor" jdbcType="INTEGER" property="supervisor" />
+    <result column="spv_name" jdbcType="VARCHAR" property="spvName" />
+    <result column="project_name" jdbcType="VARCHAR" property="projectName" />
+  </resultMap>
+
+  <select id="getListSubProjectItemBySearchForm" resultMap="CustomResultMap" parameterType="map">
+    select m."name" as spv_name, sp.*
+    from sub_project sp
+           left join project_assignment pa on sp.project_id = pa.project_id
+           left join master_reference m on sp.supervisor = m.id
+    where pa.employee_id = #{idEmployee}
+  </select>
+
+  <select id="getListSubProjectItemByIdProject" resultMap="CustomResultMap" parameterType="map">
+    select mr."name" as spv_name, sp.*
+    from sub_project sp
+           left join master_reference mr on sp.supervisor = mr.id
+    where sp.project_id = #{idProject}
+    order by sp.sub_project_name
+  </select>
+
+  <sql id ="subproject_query">
+    select m."name" as spv_name, sp.*, p.name as project_name
+    from sub_project sp
+    left join master_reference m on sp.supervisor = m.id
+    left join project p on sp.project_id = p.id
+  </sql>
+
+  <sql id ="subproject_whereclause">
+    <where>
+      <if test="searchForm.projectId != '' and searchForm.projectId != null">
+        AND sp.project_id = #{searchForm.projectId}
+      </if>
+      <if test="searchForm.code != '' and searchForm.code != null">
+        AND upper(sp.code) LIKE '%' || upper(#{searchForm.code}) || '%'
+      </if>
+      <if test="searchForm.subProjectName != '' and searchForm.subProjectName != null">
+        AND upper(sp.sub_project_name) LIKE '%' || upper(#{searchForm.subProjectName}) || '%'
+      </if>
+      <if test="searchForm.supervisor != '' and searchForm.supervisor != null">
+        AND upper(m."name") LIKE '%' || upper(#{searchForm.supervisor}) || '%'
+      </if>
+    </where>
+    ${searchForm.orderQuery}
+  </sql>
+
+  <select id="getListSubProjectItemBySearchForm2" resultMap="CustomResultMap" parameterType="map">
+    <include refid="subproject_query"/>
+    <include refid="subproject_whereclause"/>
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalSubProjectItemBySearchForm2" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    <include refid="subproject_query"/>
+    <include refid="subproject_whereclause"/>
+    ) as foo
+  </select>
+
+  <select id="getSubProjectItemById" resultMap="CustomResultMap" parameterType="map">
+    select mr."name" as spv_name, sp.*, p.name as project_name
+    from sub_project sp
+           left join master_reference mr on sp.supervisor = mr.id
+           left join project p on sp.project_id = p.id
+    where sp.id = #{idProject}
+  </select>
+
+  <select id="checkDuplicate" resultType="java.lang.Long" parameterType="map">
+     SELECT COUNT(*) FROM
+    (
+    select * from sub_project sp
+    where
+    sp.project_id = #{subProject.projectId}
+    AND sp.code = #{subProject.code}
+    AND sp.sub_project_name = #{subProject.subProjectName}
+    <if test="subProject.id != '' and subProject.id != null">
+      AND sp.id != #{subProject.id}
+    </if>
+    ) as foo
+
+  </select>
+
+  <select id="getListSubProjectNonAj" resultMap="CustomResultMap" >
+    select mr."name" as spv_name, sp.*
+    from sub_project sp
+    left join master_reference mr on sp.supervisor = mr.id
+    where sp.project_id != 3
+    order by sp.sub_project_name
+  </select>
+
+</mapper>
+
+

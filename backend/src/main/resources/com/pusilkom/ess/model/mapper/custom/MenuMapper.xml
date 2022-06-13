@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.MenuMapper">
+  <resultMap id="MenuItemResultMap" type="com.pusilkom.ess.dto.menu.MenuItem">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="kode" jdbcType="VARCHAR" property="kode" />
+    <result column="label" jdbcType="VARCHAR" property="label" />
+    <result column="id_parent" jdbcType="BIGINT" property="idParent" />
+    <result column="menu_order" jdbcType="INTEGER" property="menuOrder" />
+    <result column="is_displayed" jdbcType="BIT" property="isDisplayed" />
+    <result column="level" jdbcType="INTEGER" property="level" />
+    <result column="parent_name" jdbcType="VARCHAR" property="parentName" />
+  </resultMap>
+
+  <sql id="WithRecursiveMenuTree">
+    WITH RECURSIVE menu_tree(id, kode, label, id_parent, level, menu_order, is_displayed) AS (
+      SELECT m1.id, m1.kode, m1.label, m1.id_parent, 1 as level, m1.menu_order, m1.is_displayed
+      FROM menu m1 WHERE id_parent is null
+      UNION
+      SELECT m2.id, m2.kode, m2.label, m2.id_parent, t.level + 1, m2.menu_order, m2.is_displayed
+      FROM menu m2, menu_tree t WHERE m2.id_parent = t.id
+    )
+  </sql>
+
+  <select id="getListMenuItemByIdUserweb" resultMap="MenuItemResultMap">
+    <include refid="WithRecursiveMenuTree" />
+
+    select
+        menu.id,
+        menu.kode,
+        menu.label,
+        menu.level,
+        menu.id_parent,
+        menu.menu_order,
+        menu.is_displayed
+    from userweb
+    JOIN userweb_has_role
+      ON userweb.id = userweb_has_role.id_userweb
+    JOIN role
+      ON userweb_has_role.id_role = role.id
+    JOIN role_has_menu
+      ON role.id = role_has_menu.id_role
+    JOIN menu_tree as menu
+      ON role_has_menu.id_menu = menu.id
+    WHERE
+      userweb.id = #{idUserweb}
+    AND is_displayed
+    ORDER BY level, id_parent, menu_order
+  </select>
+
+  <sql id="Main_Query">
+    select *, (select label from menu where id = men.id_parent) as parent_name from menu men
+  </sql>
+  <sql id="Criteria_Where_Clause">
+    <where>
+      <if test="menuSearchForm.label != '' and menuSearchForm.label != null">
+        AND upper(men.label) LIKE '%' || upper(#{menuSearchForm.label}) || '%'
+      </if>
+      <if test="menuSearchForm.kode != '' and menuSearchForm.kode != null">
+        AND upper(men.kode) LIKE '%' || upper(#{menuSearchForm.kode}) || '%'
+      </if>
+      <if test="menuSearchForm.isDisplayed != '' and menuSearchForm.isDisplayed != null">
+        AND men.is_displayed = #{menuSearchForm.isDisplayed}
+      </if>
+      <if test="menuSearchForm.parentName != '' and menuSearchForm.parentName != null">
+        AND (select upper(label) from menu where id = men.id_parent) LIKE '%' || upper(#{menuSearchForm.parentName}) || '%'
+      </if>
+    </where>
+
+    ${menuSearchForm.orderQuery}
+  </sql>
+
+  <select id="getMenuItemBySearchForm" resultMap="MenuItemResultMap" parameterType="map">
+
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+
+    OFFSET #{menuSearchForm.from} - 1 LIMIT #{menuSearchForm.perPage}
+  </select>
+
+  <select id="getTotalMenuItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+    ) as foo
+  </select>
+
+  <select id="getListMenuItemByIdUserwebAndRoleId" resultMap="MenuItemResultMap">
+    <include refid="WithRecursiveMenuTree" />
+
+    select
+    menu.id,
+    menu.kode,
+    menu.label,
+    menu.level,
+    menu.id_parent,
+    menu.menu_order,
+    menu.is_displayed
+    from userweb
+    JOIN userweb_has_role
+    ON userweb.id = userweb_has_role.id_userweb
+    JOIN role
+    ON userweb_has_role.id_role = role.id
+    JOIN role_has_menu
+    ON role.id = role_has_menu.id_role
+    JOIN menu_tree as menu
+    ON role_has_menu.id_menu = menu.id
+    WHERE
+    userweb.id = #{idUserweb}
+    AND role.id = #{idRole}
+    AND is_displayed
+    ORDER BY level, id_parent, menu_order
+  </select>
+
+  <select id="getMenuNotInIdMenuRoleHasMenu" resultMap="MenuItemResultMap" parameterType="map">
+
+    <include refid="Main_Query"/>
+    where id not in (
+    select id_menu
+    from role_has_menu
+    where id_role = #{idRole})
+    order by men.label
+  </select>
+
+</mapper>

@@ -1,0 +1,228 @@
+<template>
+  <div>
+    <div class="columns">
+      <div class="column is-half">
+
+        <div class="control is-horizontal">
+          <div class="control-label">
+            <label class="label">Kode Institusi</label>
+          </div>
+          <div class="control is-grouped">
+            <div class="control is-expanded">
+              <input class="input" :class="{'is-danger' : errors.kodeInstitusi}"
+                     type="text" v-model="form.kodeInstitusi" placeholder="Kode Institusi"/>
+            </div>
+            <div class="control" v-if="errors.kodeInstitusi"> 
+              <span class="help is-danger">{{ errors.kodeInstitusi }}</span> 
+            </div>
+          </div>
+        </div>
+
+        <div class="control is-horizontal">
+          <div class="control-label">
+            <label class="label">Nama</label>
+          </div>
+          <div class="control is-grouped">
+            <div class="control is-expanded">
+              <input class="input" :class="{'is-danger' : errors.nama}"
+                     type="text" v-model="form.nama" placeholder="Nama"/>
+            </div>
+            <div class="control" v-if="errors.nama"> 
+              <span class="help is-danger">{{ errors.nama }}</span> 
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="column is-half">
+
+        <div class="control is-horizontal">
+          <div class="control-label">
+            <label class="label">Nama Singkat</label>
+          </div>
+          <div class="control is-grouped">
+            <div class="control is-expanded">
+              <input class="input" :class="{'is-danger' : errors.namaSingkat}"
+                     type="text" v-model="form.namaSingkat" placeholder="Kode Institusi"/>
+            </div>
+            <div class="control" v-if="errors.namaSingkat"> 
+              <span class="help is-danger">{{ errors.namaSingkat }}</span> 
+            </div>
+          </div>
+        </div>
+
+        <div class="control is-horizontal">
+          <div class="control-label">
+            <label class="label">Aktif ?</label>
+          </div>
+          <div class="control is-grouped">
+            <div class="control is-expanded">
+              <input class="checkbox" :class="{'is-danger' : errors.flagAktif}"
+                     type="checkbox" v-model="form.flagAktif"/>
+            </div>
+            <div class="control" v-if="errors.flagAktif"> 
+              <span class="help is-danger">{{ errors.flagAktif }}</span> 
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="columns">
+
+      <div class="column is-one-third">
+      </div>
+
+      <div class="column is-one-third">
+
+        <div class="has-text-centered">
+          <button class="button is-info" @click="submit()">
+            <span class="icon is-small">
+              <i class="fa fa-check"></i>
+            </span>
+            <span>Cari</span>
+          </button>
+        </div>
+
+      </div>
+
+      <div class="column is-one-third">
+      </div>
+
+    </div>
+
+    <table id="tableInstitusi" class="table is-bordered">
+    </table>
+
+  </div>
+</template>
+
+<script>
+/* eslint-disable */
+import $ from 'jquery'
+import 'datatables.net'
+import dt from 'datatables.net-bs'
+
+dt(window, $)
+
+//import $ from 'jquery'
+//import _ from 'lodash'
+//require('datatables.net-bs')(window, $)
+
+let vm = {
+  data () {
+    return {
+      form: {
+        kodeInstitusi: null,
+        nama: null,
+        namaSingkat: null,
+        flagAktif: null
+      },
+      loading: false,
+      errors: {}
+    }
+  },
+  mounted () {
+    var thisVM = this
+
+    var table = $('#tableInstitusi')
+    .on('preXhr.dt', function (e, settings, data) {
+        thisVM.loading = true;
+    })
+    .on('xhr.dt', function ( e, settings, json, xhr ) {
+        thisVM.loading = false;
+    })
+    .DataTable({
+      pagingType: 'simple',
+      searching: false,
+      serverSide: true,
+      stateSave: true,
+      ajax: {
+          url: '/api/institusi/table',
+          type: 'POST',
+          contentType: 'application/json',
+          dataType: 'json',
+          data: function (d) {
+              d.kodeInstitusi = thisVM.form.kodeInstitusi
+              d.nama = thisVM.form.nama
+              d.namaSingkat = thisVM.form.namaSingkat
+              d.flagAktif = thisVM.form.flagAktif
+              return JSON.stringify( d )
+          },
+          dataFilter: function(raw) {
+              console.log('MASUK DATA FILTER')
+              console.log(raw)
+              var dataTableResponse = {}
+
+              var response = JSON.parse(raw)
+              console.log('PRINT RESPONSE JSON : ')
+              console.log(response)
+              thisVM.errors = {}
+
+                  dataTableResponse.recordsTotal = response.totalRecords
+                  dataTableResponse.recordsFiltered = response.totalDisplayRecords
+                  dataTableResponse.data = response.rows
+                  dataTableResponse.draw = response.draw
+
+
+              console.log('PRINT DATATABLE RESPONSE : ')
+              console.log(dataTableResponse)
+
+              return JSON.stringify( dataTableResponse ) // return JSON string
+          },
+          error: function(resp) {
+            if(!_.isNil(resp.responseJSON.errors)){
+              console.log('Masuk IF')
+              console.log(resp)
+
+              var dataTableResponse = {recordsTotal: 0, recordsFiltered: 0, data: []}
+              _.each(resp.responseJSON.errors, function(value) {
+                  thisVM.$set(thisVM.errors, value.field, value.message)
+              })
+
+              console.log('ERRORS : ')
+
+              return
+            }
+          }
+      },
+      columns: [
+          { 'data': 'kodeInstitusi', 'orderable': false },
+          { 'data': 'nama', 'orderable': false },
+          { 'data': 'namaSingkat', 'orderable': false },
+          { 'data': 'flagAktif', 'orderable': false },
+          { 'data': 'id' } //quick hack. Kolom Operasi
+      ],
+      columnDefs: [
+        { 'targets'  : 0, 'title': 'Kode Institusi'},
+        { 'targets'  : 1, 'title': 'Nama'},
+        { 'targets'  : 2, 'title': 'Nama Singkat'},
+        { 'targets'  : 3, 'title': 'Aktif ?'},
+        { 'targets'  : 4, 'title': 'Operasi', 'orderable': false}
+      ],
+
+      createdRow: function ( row, data, index ) {
+
+          var lihatLink = $('<a />')
+                  .attr('id', 'linkPdf')
+                  .attr('data-invoice', data.invoiceNo)
+                  .attr('href', '<c:url value="/download/invoice/"/>' + data.billAccountNo + '/' + data.invoiceNo)
+                  .text('<spring:message code="link.pdf"/>');
+
+          var operation = $('<div class="unwrap text-center">');
+
+          operation.append(lihatLink);
+
+          $('td', row).eq(4).html(operation);
+      }
+    });
+  }
+}
+
+export default vm
+
+
+
+</script>

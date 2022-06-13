@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.PettyCashMapper">
+  <resultMap id="CustomResultMap" type="com.pusilkom.ess.dto.table.PettyCashItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="req_number" jdbcType="VARCHAR" property="reqNumber" />
+    <result column="req_date" jdbcType="DATE" property="reqDate" />
+    <result column="paid_to" jdbcType="INTEGER" property="paidTo" />
+    <result column="req_amount" jdbcType="INTEGER" property="reqAmount" />
+    <result column="amount_in_word" jdbcType="VARCHAR" property="amountInWord" />
+    <result column="category" jdbcType="VARCHAR" property="category" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+    <result column="funding_source_id" jdbcType="VARCHAR" property="fundingSourceId" />
+    <result column="need_approval" jdbcType="BOOLEAN" property="needApproval" />
+    <result column="reason_of_rejection" jdbcType="VARCHAR" property="reasonOfRejection" />
+    <result column="approval_date" jdbcType="DATE" property="approvalDate" />
+    <result column="is_approved" jdbcType="BOOLEAN" property="isApproved" />
+    <result column="paid_to_name" jdbcType="VARCHAR" property="paidToName" />
+    <result column="counter" jdbcType="INTEGER" property="counter" />
+    <result column="upload_path" jdbcType="VARCHAR" property="uploadPath" />
+    <result column="created_by" jdbcType="INTEGER" property="createdBy" />
+    <result column="is_done" jdbcType="BOOLEAN" property="isDone" />
+    <result column="reason_of_cancellation" jdbcType="VARCHAR" property="reasonOfCancellation" />
+  </resultMap>
+
+  <sql id="Main_Query">
+    select lr.id as id, lr.req_number as req_number, lr.paid_to as paid_to,
+    lr.category as category, lr.req_date as req_date, lr.need_approval as need_approval,
+    e.name as paid_to_name, lr.approval_date as approval_date, lr.created_by as createdBy,
+    lr.is_approved as isApproved, lr.is_done as isDone, lr.upload_path as uploadPath, lr.req_amount as reqAmount,
+    lr.description as description, lr.amount_in_word as amountInWord, lr.reason_of_rejection as reasonOfRejection,
+    lr.funding_source_id as fundingSourceId, lr.counter as counter, lr.reason_of_cancellation as reasonOfCancellation
+    from petty_cash lr
+    left join employee e on e.id = lr.paid_to
+  </sql>
+
+  <sql id="Criteria_Where_Clause">
+    <where>
+      <if test="searchForm.category != '' and searchForm.category != null">
+        AND lr.category = #{searchForm.category}
+      </if>
+      <if test="searchForm.startDateString != '' and searchForm.startDateString != null">
+        AND lr.req_date &gt; #{searchForm.startDate}::DATE
+      </if>
+      <if test="searchForm.endDateString != '' and searchForm.endDateString != null">
+        AND lr.req_date &lt; #{searchForm.endDate}::DATE
+      </if>
+      <if test="searchForm.roleName == 'DIRECTOR' or searchForm.roleName == 'DEPUTY_DIRECTOR'">
+        <if test="searchForm.pettyCashStatus == 'Paid'">
+          AND ((lr.need_approval is true AND lr.is_approved is not null) or (lr.created_by = #{searchForm.loginAs}))
+        </if>
+        <if test="searchForm.pettyCashStatus != 'Paid'">
+          AND lr.need_approval is true AND lr.is_approved is null
+        </if>
+      </if>
+      <if test="searchForm.roleName == 'ACCOUNTING_STAFF'">
+        <if test="searchForm.pettyCashStatus == 'Waiting for Approval'">
+          AND lr.is_approved is null AND lr.need_approval is true
+        </if>
+        <if test="searchForm.pettyCashStatus == 'In Process'">
+          AND (((lr.need_approval is false AND lr.is_done is not TRUE) OR (lr.need_approval is true AND lr.is_done is not TRUE AND lr.is_approved is TRUE)) AND lr.reason_of_cancellation is null)
+        </if>
+        <if test="searchForm.pettyCashStatus == 'Paid'">
+          AND lr.is_done is true
+        </if>
+        <if test="searchForm.pettyCashStatus == 'Rejected'">
+          AND (lr.is_approved is false or lr.reason_of_cancellation is not null)
+        </if>
+      </if>
+      <if test="searchForm.loginAs != '' and searchForm.loginAs != null and (searchForm.roleName != 'ACCOUNTING_STAFF' and searchForm.roleName != 'DIRECTOR' and searchForm.roleName != 'DEPUTY_DIRECTOR')">
+        AND lr.created_by = #{searchForm.loginAs}
+      </if>
+      <if test="searchForm.pettyCashStatus == 'Unapproved'">
+        AND lr.need_approval is true AND lr.is_approved is null
+      </if>
+    </where>
+    <if test="searchForm.isVueTable == true">
+      ${searchForm.orderQuery}
+    </if>
+    <if test="searchForm.isVueTable != true">
+      order by lr.req_date asc
+    </if>
+  </sql>
+
+  <select id="getListPettyCashBySearchForm" resultMap="CustomResultMap" parameterType="map">
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+    <if test="searchForm.isVueTable == true">
+      OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+    </if>
+  </select>
+
+  <select id="getTotalPettyCashItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+    ) as foo
+  </select>
+
+  <select id="getListPettyCashByIdUser" resultMap="CustomResultMap" parameterType="map">
+    <include refid="getListPettyCashByIdUserQuery"/>
+  </select>
+
+  <sql id="getListPettyCashByIdUserQuery">
+    select lr.id as id, lr.req_number as req_number, lr.paid_to as paid_to,
+    lr.category as category, lr.req_date as req_date, lr.need_approval as need_approval,
+    e.name as paid_to_name, lr.approval_date as approval_date, lr.created_by as createdBy,
+    lr.is_approved as isApproved, lr.is_done as isDone, lr.upload_path as uploadPath, lr.req_amount as reqAmount,
+    lr.description as description, lr.amount_in_word as amountInWord, lr.reason_of_rejection as reasonOfRejection,
+    lr.funding_source_id as fundingSourceId, lr.counter as counter, lr.reason_of_cancellation as reasonOfCancellation
+    from petty_cash lr
+    left join employee e on e.id = lr.paid_to
+    <where>
+        lr.paid_to = #{idUser} or lr.created_by = #{idUser}
+    </where>
+	order by lr.id desc
+  </sql>
+</mapper>
+
+

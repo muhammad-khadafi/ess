@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.LetterMapper">
+  <resultMap id="LetterItemMap" type="com.pusilkom.ess.dto.table.LetterItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="category" jdbcType="VARCHAR" property="category" />
+    <result column="crated_date" jdbcType="DATE" property="created_date" />
+    <result column="description" jdbcType="VARCHAR" property="description" />
+    <result column="purpose" jdbcType="VARCHAR" property="purpose" />
+    <result column="information" jdbcType="VARCHAR" property="information" />
+    <result column="id_user" jdbcType="INTEGER" property="id_user" />
+    <result column="serial_number" jdbcType="VARCHAR" property="serial_number" />
+    <result column="username" jdbcType="VARCHAR" property="username" />
+    <result column="ename" jdbcType="VARCHAR" property="ename" />
+    </resultMap>
+
+  <select id="getKeteranganLetter" resultMap="LetterItemMap" parameterType="map">
+    select distinct os.name as category
+    from organization_structure os
+    left join organization o on o.id = os.organization_id
+    where o.name ilike 'PuSilkoM'
+    order by os.name asc
+  </select>
+
+  <select id="getKeteranganId" resultMap="LetterItemMap" parameterType="map">
+    select l.id
+    from letter l
+    order by l.id desc limit 1
+  </select>
+
+  <select id="getListLetter" resultMap="LetterItemMap" parameterType="map">
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+    OFFSET #{listSuratForm.from} - 1 LIMIT #{listSuratForm.perPage}
+  </select>
+  <sql id="Main_Query">
+      select case
+      when l.category ilike 'C' then 'Kontrak'
+      when l.category ilike 'B' then 'Billing'
+      when l.category ilike 'U' then 'Umum'
+      when l.category ilike 'P' then 'Penawaran'
+      end as category, serial_number, l.created_date,
+       purpose, l.information, l.id,
+      tl.value,tl.name,l.description, uw.username, e.name as ename
+      from letter l
+      left join tlu_letter tl on l.category = tl.value
+      left join userweb uw on l.id_user = uw.id
+      left join employee e on e.id = uw.employee_id
+  </sql>
+  <sql id="Criteria_Where_Clause">
+    <where>
+      <if test="listSuratForm.information != '' and listSuratForm.information != null">
+        AND upper(l.information ) ILIKE '%' || upper(#{listSuratForm.information}) || '%'
+      </if>
+      <if test="listSuratForm.category != '' and listSuratForm.category != null">
+        AND upper(tl.name) LIKE '%' || upper(#{listSuratForm.category}) || '%'
+      </if>
+      <if test="listSuratForm.createdDateString != '' and listSuratForm.createdDateString != null">
+        AND to_char(l.created_date, 'DD-MM-YYYY') = #{listSuratForm.createdDateString}
+      </if>
+    </where>
+
+   ${listSuratForm.orderQuery}
+  </sql>
+
+  <select id="getTotalLetterListBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+    ) as foo
+  </select>
+  <select id="getCategoryLetter" resultMap="LetterItemMap" parameterType="map">
+    select distinct case
+    when value ilike 'U' then 'Umum'
+    when value ilike 'B' then 'Billing'
+    when value ilike 'C' then 'Kontrak'
+    when value ilike 'P' then 'Penawaran'
+    end as category
+    from tlu_letter
+  </select>
+</mapper>

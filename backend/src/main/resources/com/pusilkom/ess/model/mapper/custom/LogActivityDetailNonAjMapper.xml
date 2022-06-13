@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.LogActivityDetailNonAjMapper">
+  <resultMap id="CustomResultMap" type="com.pusilkom.ess.dto.table.LogActivityDetailItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="date" jdbcType="DATE" property="date" />
+    <result column="activity_detail" jdbcType="VARCHAR" property="activityDetail" />
+    <result column="third_party" jdbcType="VARCHAR" property="thirdParty" />
+    <result column="duration" jdbcType="INTEGER" property="duration" />
+    <result column="overtime" jdbcType="INTEGER" property="overtime" />
+    <result column="spv_assigned" jdbcType="VARCHAR" property="spvAssigned" />
+    <result column="project_assign_id" jdbcType="INTEGER" property="projectAssignId" />
+    <result column="sub_pro_id" jdbcType="INTEGER" property="subProId" />
+    <result column="sub_project_name" jdbcType="VARCHAR" property="subProjectName" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+    <result column="date_string" jdbcType="VARCHAR" property="dateString" />
+    <result column="employee_name" jdbcType="VARCHAR" property="employeeName" />
+    <result column="employee_id" jdbcType="VARCHAR" property="employeeId" />
+    <result column="project_name" jdbcType="VARCHAR" property="projectName" />
+  </resultMap>
+    <resultMap id="EmployeeItemResultMap" type="com.pusilkom.ess.dto.table.EmployeeItem">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+    </resultMap>
+
+    <resultMap id="TimesheetReportResultMap" type="com.pusilkom.ess.dto.table.TimesheetReportItem">
+        <id column="id" jdbcType="INTEGER" property="employeeId" />
+        <result column="name" jdbcType="VARCHAR" property="employeeName" />
+        <result column="hari" jdbcType="INTEGER" property="totalDay" />
+    </resultMap>
+
+  <select id="getAllLogActivityDetail" resultMap="CustomResultMap" parameterType="map">
+    select p.name as project_name, sp.sub_project_name, sp.code, l.*, TO_CHAR(date, 'DD-MM-YYYY') as date_string
+    from log_activity_detail_non_aj l
+           left join sub_project sp on l.sub_pro_id = sp.id
+           left join project_assignment pa on l.project_assign_id = pa.id
+           left join project p on pa.project_id = p.id
+    where EXTRACT(MONTH FROM date) = #{searchForm.months} and EXTRACT(year FROM date) = #{searchForm.years}
+    and pa.employee_id = #{searchForm.idEmployee}
+
+    ${searchForm.orderQuery}
+  </select>
+
+  <select id="getTotalLogActivityDetail" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(l.*)
+    from log_activity_detail_non_aj l
+           left join sub_project sp on l.sub_pro_id = sp.id
+           left join project_assignment pa on l.project_assign_id = pa.id
+           left join project p on sp.project_id = p.id
+    where EXTRACT(MONTH FROM date) = #{searchForm.months} and EXTRACT(year FROM date) = #{searchForm.years}
+    and pa.employee_id = #{searchForm.idEmployee}
+  </select>
+
+    <select id="getAllLogActivityView" resultMap="CustomResultMap" parameterType="map">
+        select p.name as project_name, sp.sub_project_name, sp.code, l.*, TO_CHAR(date, 'DD-MM-YYYY') as date_string, pa.employee_id
+        from log_activity_detail_non_aj l
+        left join sub_project sp on l.sub_pro_id = sp.id
+        inner join project_assignment pa on l.project_assign_id = pa.id
+        inner join project p on pa.project_id = p.id
+        where p.id = #{searchForm.projectId} AND (date between #{searchForm.startDate} and #{searchForm.endDate})
+        <include refid="criteria_subproject"/>
+    </select>
+
+    <select id="getAllAssignedEmployees" resultMap="EmployeeItemResultMap" parameterType="map">
+        select distinct pa.employee_id as id, e."name"
+        from log_activity_detail_non_aj l
+            inner join project_assignment pa on pa.id = l.project_assign_id
+            inner join employee e on pa.employee_id = e.id
+        where pa.project_id = #{searchForm.projectId}
+        <include refid="criteria_subproject"/>
+    </select>
+
+    <sql id="criteria_subproject">
+        <choose>
+            <when test="searchForm.subProjectId != null">
+                AND l.sub_pro_id = #{searchForm.subProjectId}
+            </when>
+            <otherwise>
+                AND l.sub_pro_id IS NULL
+            </otherwise>
+        </choose>
+    </sql>
+
+    <select id="getTimesheetSummaryData" resultMap="TimesheetReportResultMap" parameterType="map">
+        select distinct em.name, em.id, (select count(*) from (select distinct ladna.date from log_activity_detail_non_aj ladna
+        join project_assignment pa on ladna.project_assign_id = pa.id
+        join employee e on pa.employee_id = e.id
+        where
+        e.id = em.id and
+        ladna.date between #{searchForm.startDate} and #{searchForm.endDate}) as sub) as hari
+        from log_activity_detail_non_aj ladna
+        join project_assignment pa on ladna.project_assign_id = pa.id
+        join employee em on pa.employee_id = em.id
+        where
+        ladna.date between #{searchForm.startDate} and #{searchForm.endDate}
+    </select>
+</mapper>
+
+

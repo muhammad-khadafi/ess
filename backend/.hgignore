@@ -1,0 +1,6 @@
+syntax:glob
+
+target/**
+
+#will be copied by maven-plugin from frontend
+src/main/resources/public/**

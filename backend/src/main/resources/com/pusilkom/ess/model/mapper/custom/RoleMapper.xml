@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.RoleMapper">
+    <resultMap id="CustomResultMap" type="com.pusilkom.ess.dto.table.RoleItem">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="kode" jdbcType="VARCHAR" property="kode" />
+        <result column="label" jdbcType="VARCHAR" property="label" />
+        <result column="keterangan" jdbcType="VARCHAR" property="keterangan" />
+    </resultMap>
+
+    <sql id ="role_query">
+        select *
+        from role
+    </sql>
+
+    <sql id ="role_whereclause">
+        <where>
+            <if test="searchForm.kode != '' and searchForm.kode != null">
+                AND upper(role.kode) LIKE '%' || upper(#{searchForm.kode}) || '%'
+            </if>
+            <if test="searchForm.label != '' and searchForm.label != null">
+                AND upper(role.label) LIKE '%' || upper(#{searchForm.label}) || '%'
+            </if>
+        </where>
+        ${searchForm.orderQuery}
+    </sql>
+
+    <select id="getListRoleItemBySearchForm" resultMap="CustomResultMap" parameterType="map">
+        <include refid="role_query"/>
+        <include refid="role_whereclause"/>
+        OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+    </select>
+
+    <select id="getTotalRoleItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+        SELECT COUNT(*) FROM
+        (
+        <include refid="role_query"/>
+        <include refid="role_whereclause"/>
+        ) as foo
+    </select>
+
+    <select id="checkDuplicateKode" resultType="java.lang.Long" parameterType="map">
+        SELECT COUNT(*) FROM
+        (
+        select * from role r
+        where
+        r.kode = #{role.kode}
+        <if test="role.id != '' and role.id != null">
+            AND r.id != #{role.id}
+        </if>
+        ) as foo
+
+    </select>
+
+    <select id="checkDuplicateLabel" resultType="java.lang.Long" parameterType="map">
+        SELECT COUNT(*) FROM
+        (
+        select * from role r
+        where
+        r.label = #{role.label}
+        <if test="role.id != '' and role.id != null">
+            AND r.id != #{role.id}
+        </if>
+        ) as foo
+
+    </select>
+
+    <select id="getListRoleNotInUserwebHasRoleByIdUserweb" resultMap="CustomResultMap" parameterType="map">
+        <include refid="role_query"/>
+        where role.id not in (select uhr.id_role
+        from userweb_has_role uhr
+        where uhr.id_userweb = #{idUserweb})
+    </select>
+
+</mapper>

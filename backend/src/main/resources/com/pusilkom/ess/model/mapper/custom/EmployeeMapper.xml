@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.EmployeeMapper">
+  <resultMap id="EmployeeItemResultMap" type="com.pusilkom.ess.dto.table.EmployeeItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="nik" jdbcType="VARCHAR" property="nik" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="gender" jdbcType="VARCHAR" property="gender" />
+    <result column="birth_place" jdbcType="VARCHAR" property="birthPlace" />
+    <result column="main_phone_number" jdbcType="VARCHAR" property="mainPhoneNumber" />
+    <result column="secondary_phone_number" jdbcType="VARCHAR" property="secondaryPhoneNumber" />
+    <result column="birth_date" jdbcType="DATE" property="birthDate" />
+  </resultMap>
+
+  <resultMap id="EmployeeAssignmentReportResultMap" type="com.pusilkom.ess.dto.form.cmd.EmployeeAssignmentReportCmd">
+    <result column="start_date" jdbcType="DATE" property="startDate" />
+    <result column="end_date" jdbcType="DATE" property="endDate" />
+    <result column="name" jdbcType="VARCHAR" property="projectName" />
+    <result column="load" jdbcType="INTEGER" property="load" />
+  </resultMap>
+
+  <resultMap id="TimesheetReportResultMap" type="com.pusilkom.ess.dto.table.TimesheetReportItem">
+    <id column="id" jdbcType="INTEGER" property="employeeId" />
+    <result column="name" jdbcType="VARCHAR" property="employeeName" />
+    <result column="hari" jdbcType="INTEGER" property="totalDay" />
+  </resultMap>
+
+  <sql id="Main_Query">
+    SELECT * FROM employee
+  </sql>
+  <sql id="Criteria_Where_Clause">
+    <where>
+      <if test="searchForm.name != '' and searchForm.name != null">
+        AND upper(name) LIKE '%' || upper(#{searchForm.name}) || '%'
+      </if>
+      <if test="searchForm.nik != '' and searchForm.nik != null">
+        AND upper(nik) LIKE '%' || upper(#{searchForm.nik}) || '%'
+      </if>
+      <if test="searchForm.email != '' and searchForm.email != null">
+        AND upper(email) LIKE '%' || upper(#{searchForm.email}) || '%'
+      </if>
+      <if test="searchForm.gender != '' and searchForm.gender != null">
+        AND gender = #{searchForm.gender}
+      </if>
+      <if test="searchForm.id != '' and searchForm.id != null">
+        AND id = #{searchForm.id}
+      </if>
+    </where>
+
+    ${searchForm.orderQuery}
+  </sql>
+
+  <select id="getListEmployeeItemBySearchForm" resultMap="EmployeeItemResultMap" parameterType="map">
+
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalEmployeeItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+    ) as foo
+  </select>
+
+  <select id="getListEmployeeItemBySearchFormByOrganizationId" resultMap="EmployeeItemResultMap" parameterType="map">
+    select e.*
+    from employee e
+    left join employee_position ep on e.id = ep.employee_id
+    left join organization_structure os on ep.structure_id = os.id
+    where os.organization_id = #{searchForm.organizationId}
+
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalEmployeeItemBySearchFormByOrganizationId" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    select e.*
+    from employee e
+    left join employee_position ep on e.id = ep.employee_id
+    left join organization_structure os on ep.structure_id = os.id
+    where os.organization_id = #{searchForm.organizationId}
+    ) as foo
+  </select>
+
+  <select id="getListEmployeeNotAssign" resultMap="EmployeeItemResultMap" parameterType="map">
+    select *
+    from employee
+    where id not in (
+    select employee_id
+    from userweb
+    where employee_id is not null
+    )
+  </select>
+
+  <select id="getListEmployeeItemBySearchFormForProjectAssignment" resultMap="EmployeeItemResultMap" parameterType="map">
+
+    select e.* from employee e
+    left join userweb u on e.id = u.employee_id
+    left join userweb_has_role uhr on u.id = uhr.id_userweb
+    where uhr.id_role != 1
+    <if test="searchForm.name != '' and searchForm.name != null">
+      AND upper(name) LIKE '%' || upper(#{searchForm.name}) || '%'
+    </if>
+    ${searchForm.orderQuery}
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalEmployeeItemBySearchFormForProjectAssignment" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    select e.* from employee e
+    left join userweb u on e.id = u.employee_id
+    left join userweb_has_role uhr on u.id = uhr.id_userweb
+    where uhr.id_role != 1
+    <if test="searchForm.name != '' and searchForm.name != null">
+      AND upper(name) LIKE '%' || upper(#{searchForm.name}) || '%'
+    </if>
+    ) as foo
+  </select>
+
+  <select id="getListEmployeeNotAssigninPorjectAssignment" resultMap="EmployeeItemResultMap" parameterType="map">
+    select e.* from employee e
+    left join userweb u on e.id = u.employee_id
+    left join userweb_has_role uhr on u.id = uhr.id_userweb
+    where e.id not in (
+    select employee_id from project_assignment pa
+    where (extract(month from pa.start_date) = #{months} or (extract(month from pa.end_date) &gt;= #{months} and extract(month from pa.start_date) &lt; extract(month from pa.end_date)))
+        and extract(year from pa.start_date) = #{years}
+    )
+    and uhr.id_role != 1
+
+    ${searchForm.orderQuery}
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getListEmployeeByProjectId" resultMap="EmployeeItemResultMap" parameterType="map">
+    select distinct pa.employee_id as id, e."name"
+    from project_assignment pa left join
+    employee e on pa.employee_id = e.id
+    where pa.project_id in (select distinct project_id from project_assignment where employee_id = #{employeeId} and extract(month from start_date) = #{months}
+    and extract(year from start_date) = #{years})
+    and extract(month from pa.start_date) = #{months}
+    and extract(year from pa.start_date) = #{years}
+  </select>
+
+  <select id="getListEmployeeByRoleManager" resultMap="EmployeeItemResultMap" parameterType="map">
+    select e.id, e."name"
+    from userweb_has_role uhr
+    left join userweb uw on uhr.id_userweb = uw.id
+    left join employee e on uw.employee_id = e.id
+    left join role r on r.id = uhr.id_role
+    where r.kode = 'MANAGER';
+  </select>
+
+  <select id="getListEmployeeAJ" resultMap="EmployeeItemResultMap">
+    select distinct e.id, e."name" from project_assignment pa join employee e on pa.employee_id = e.id
+    where pa.project_id = 3 and e.is_active = true
+    order by name asc
+  </select>
+
+  <select id="getListEmployeeNonAJ" resultMap="EmployeeItemResultMap">
+    select distinct e.id, e."name" from project_assignment pa join employee e on pa.employee_id = e.id
+    where pa.project_id != 3 and e.is_active = true
+    order by name asc
+  </select>
+
+  <select id="getAllEmployeeActive" resultMap="TimesheetReportResultMap">
+    select name, id, 0 as hari
+    from employee e
+    where is_active order by "name"
+  </select>
+
+  <select id="getEmployeeProjectAssignmentReport" resultMap="BaseResultMap" parameterType="map">
+    select distinct e.id, e.name from project_assignment pa
+    join employee e on pa.employee_id = e.id
+    where project_id in
+    <foreach item="item" index="index" collection="selectedProjectList"
+             open="(" separator="," close=")">
+      #{item}
+    </foreach>
+    and ((pa.start_date between #{startDate} and #{endDate}) or (pa.end_date between #{startDate} and #{endDate}))
+    order by e."name"
+  </select>
+
+  <select id="getEmployeeProjectAssignmentReport2" resultMap="EmployeeAssignmentReportResultMap" parameterType="map">
+    select pa.start_date, p."name", pa."load" from project_assignment pa
+    join project p on pa.project_id = p.id
+    where employee_id = #{id} and project_id in
+    <foreach item="item" index="index" collection="selectedProjectList"
+             open="(" separator="," close=")">
+      #{item}
+    </foreach>
+    and ((pa.start_date between #{startDate} and #{endDate}) or (pa.end_date between #{startDate} and #{endDate}))
+    order by pa.start_date asc
+  </select>
+
+</mapper>

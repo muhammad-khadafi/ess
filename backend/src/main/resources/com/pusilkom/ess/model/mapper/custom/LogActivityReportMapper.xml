@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.LogActivityReportMapper">
+  <resultMap id="CustomResultMap" type="com.pusilkom.ess.dto.table.LogActivityReportItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="employee_id" jdbcType="INTEGER" property="employeeId" />
+    <result column="start_date" jdbcType="DATE" property="startDate" />
+    <result column="end_date" jdbcType="DATE" property="endDate" />
+    <result column="path" jdbcType="VARCHAR" property="path" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="startDateString" jdbcType="VARCHAR" property="startDateString" />
+    <result column="endDateString" jdbcType="VARCHAR" property="endDateString" />
+  </resultMap>
+  <sql id="Criteria_Where_Clause">
+    <where>
+      <if test="searchForm.idEmployee != null and searchForm.idEmployee != ''">
+        lar.employee_id = #{searchForm.idEmployee}
+      </if>
+      <if test="searchForm.startDateString != null and searchForm.startDateString != ''">
+        AND to_char(start_date, 'DD-MM-YYYY') = #{searchForm.startDateString}
+      </if>
+      <if test="searchForm.endDateString != null and searchForm.endDateString != ''">
+        AND to_char(end_date, 'DD-MM-YYYY') = #{searchForm.endDateString}
+      </if>
+    </where>
+  </sql>
+
+  <select id="getListLogActivityReportItemBySearchForm" resultMap="CustomResultMap" parameterType="map">
+    select e.name as name, lar.*, TO_CHAR(start_date, 'DD-Month-YYYY') as startDateString, TO_CHAR(end_date, 'DD-Month-YYYY') as endDateString
+    from log_activity_report lar
+    left join employee e  on lar.employee_id = e.id
+    <include refid="Criteria_Where_Clause"/>
+    order by lar.start_date
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalLogActivityReportItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    select COUNT (lar.*)
+    from log_activity_report lar
+    left join employee e  on lar.employee_id = e.id
+    <include refid="Criteria_Where_Clause"/>
+  </select>
+
+</mapper>
+
+

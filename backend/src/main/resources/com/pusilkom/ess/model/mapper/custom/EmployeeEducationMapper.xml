@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.EmployeeEducationMapper">
+    <resultMap id="EmployeeEducationItemResultMap" type="com.pusilkom.ess.dto.table.EmployeeEducationItem">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="employee_id" jdbcType="VARCHAR" property="employeeId" />
+        <result column="grade" jdbcType="VARCHAR" property="grade" />
+        <result column="institution" jdbcType="VARCHAR" property="institution" />
+        <result column="major" jdbcType="VARCHAR" property="major" />
+        <result column="start_year" jdbcType="VARCHAR" property="startYear" />
+        <result column="end_year" jdbcType="VARCHAR" property="endYear" />
+        <result column="result" jdbcType="VARCHAR" property="result" />
+    </resultMap>
+
+    <sql id="Main_Query">
+    SELECT * FROM employee_education
+  </sql>
+    <sql id="Criteria_Where_Clause">
+        <where>
+            <if test="searchForm.grade != null">
+                AND upper(grade) LIKE '%' || upper(#{searchForm.grade}) || '%'
+            </if>
+            <if test="searchForm.institution != null">
+                AND institution = #{searchForm.institution}
+            </if>
+            <if test="searchForm.major != null">
+                AND upper(major) LIKE '%' || upper(#{searchForm.major}) || '%'
+            </if>
+            <if test="searchForm.result != null">
+                AND result = #{searchForm.result}
+            </if>
+            <if test="searchForm.employeeId != null">
+                AND employee_id = #{searchForm.employeeId}
+            </if>
+        </where>
+
+        ${searchForm.orderQuery}
+    </sql>
+
+    <select id="getListEmployeeEducationItemBySearchForm" resultMap="EmployeeEducationItemResultMap" parameterType="map">
+
+        <include refid="Main_Query"/>
+        <include refid="Criteria_Where_Clause"/>
+
+        OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+    </select>
+
+    <select id="getTotalEmployeeEducationItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+        SELECT COUNT(*) FROM
+        (
+        <include refid="Main_Query"/>
+        <include refid="Criteria_Where_Clause"/>
+        ) as foo
+    </select>
+
+</mapper>

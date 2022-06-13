@@ -1,0 +1,5 @@
+export EmployeeLoggingForm from './EmployeeLoggingForm'
+export EmployeeLoggingList from './EmployeeLoggingList.vue'
+export EmployeeLoggingView from './EmployeeLoggingView.vue'
+export EmployeeLoggingUpdate from './EmployeeLoggingUpdate.vue'
+export EmployeeLoggingDelete from './EmployeeLoggingDelete.vue'

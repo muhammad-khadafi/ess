@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="log_activity_details_report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="bc2330b0-d485-479a-992d-099b7ffa23a3">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="ESS DEV"/>
+	<parameter name="idEmployee" class="java.lang.Integer"/>
+	<parameter name="date_before" class="java.sql.Date"/>
+	<parameter name="date_after" class="java.sql.Date"/>
+	<parameter name="subreport_location" class="java.lang.String"/>
+	<parameter name="months" class="java.lang.Integer"/>
+	<parameter name="years" class="java.lang.Integer"/>
+	<parameter name="logo_arta_jasa" class="java.lang.String"/>
+	<parameter name="logo_pusilkom" class="java.lang.String"/>
+	<parameter name="sub_report_spv_location" class="java.lang.String"/>
+	<parameter name="filter_project" class="java.lang.String"/>
+	<parameter name="project_type" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select e.name, pa.start_date , pa.end_date, p."name" as project_name, lvl.name as posisi, pa."load" 
+from project_assignment pa 
+join employee e on pa.employee_id = e.id 
+join project  p on p.id = pa.project_id
+join master_reference lvl on pa.role_id = lvl.id
+where 
+(pa.start_date between  $P{date_before}  and  $P{date_after} 
+or
+pa.end_date between  $P{date_before}  and  $P{date_after} 
+or
+ $P{date_before}  between pa.start_date and pa.end_date)
+ $P!{filter_project} 
+ order by e.name]]>
+	</queryString>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="name"/>
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="employee"/>
+	</field>
+	<field name="start_date" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="start_date"/>
+		<property name="com.jaspersoft.studio.field.label" value="start_date"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="project_assignment"/>
+	</field>
+	<field name="end_date" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="end_date"/>
+		<property name="com.jaspersoft.studio.field.label" value="end_date"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="project_assignment"/>
+	</field>
+	<field name="project_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="project_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="project_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="project"/>
+	</field>
+	<field name="posisi" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="posisi"/>
+		<property name="com.jaspersoft.studio.field.label" value="posisi"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="master_reference"/>
+	</field>
+	<field name="load" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="load"/>
+		<property name="com.jaspersoft.studio.field.label" value="load"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="project_assignment"/>
+	</field>
+	<pageHeader>
+		<band height="121" splitType="Stretch">
+			<staticText>
+				<reportElement x="140" y="9" width="280" height="30" uuid="2773aa3c-c3a8-439d-a22d-6cd054ca7f75"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Calibri" size="16" isBold="true" isItalic="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[PROJECT ASSIGNMENT REPORT]]></text>
+			</staticText>
+			<line>
+				<reportElement x="7" y="53" width="549" height="1" uuid="d73ad54d-003d-43c8-82d5-2d477f4fe90b"/>
+			</line>
+			<image>
+				<reportElement x="475" y="-2" width="90" height="56" uuid="50512153-08a3-4751-96a5-12eb5149c4e2"/>
+				<imageExpression><![CDATA[$P{logo_pusilkom}]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="0" y="69" width="115" height="20" uuid="6301c4b6-6ae7-492b-897a-ef12cc215027">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7ad5c408-6562-4eec-84cd-118e89a2f706"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph leftIndent="3"/>
+				</textElement>
+				<text><![CDATA[Periode]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" x="115" y="69" width="205" height="20" uuid="a68909cd-97d9-4d37-a7b3-b8519d5a9342">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7ad5c408-6562-4eec-84cd-118e89a2f706"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<paragraph leftIndent="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy").format($P{date_before})+ " - "+ new SimpleDateFormat("dd/MM/yyyy").format($P{date_after})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="89" width="115" height="20" uuid="645bf001-b25e-47ad-950f-5cda93c6f5ee">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7ad5c408-6562-4eec-84cd-118e89a2f706"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph leftIndent="3"/>
+				</textElement>
+				<text><![CDATA[Tipe Proyek]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" x="115" y="89" width="205" height="20" uuid="206301f3-6cb2-4c55-bfd1-4bb3afa7c99e">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7ad5c408-6562-4eec-84cd-118e89a2f706"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<paragraph leftIndent="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{project_type}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="20" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="115" height="20" uuid="df021a95-e50c-4ce9-a533-e0c20ebb8b1b">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="f262eb69-ee18-49e8-8d73-0c31a906436e"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="115" y="0" width="130" height="20" uuid="af047209-4ffd-4aae-aeea-f7dd39d6c966">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="41ff8a8b-657d-4db5-a427-f526e82829ea"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tanggal Assignment]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="245" y="0" width="150" height="20" uuid="042a6ed4-b190-4045-b945-ce48749a4401">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="e970789a-3193-484e-93a6-9a3ed7baac64"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Proyek]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="395" y="0" width="95" height="20" uuid="f86bf667-900c-4303-b5e5-a8a5b1601ed3">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="33e5e592-4764-41e7-9771-c6c0487a8c66"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Posisi]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="490" y="0" width="66" height="20" uuid="34d4c52e-5d67-40ca-b5ae-561daf1e24c8">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="33e5e592-4764-41e7-9771-c6c0487a8c66"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Load]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="25" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="115" height="25" uuid="baf45433-70bd-4963-aba4-63e22314c3e2">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="f262eb69-ee18-49e8-8d73-0c31a906436e"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="115" y="0" width="130" height="25" uuid="f6298579-84df-4026-b88c-4fdd8aaedf81">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy").format($F{start_date})+ " - "+ new SimpleDateFormat("dd/MM/yyyy").format($F{end_date})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="245" y="0" width="150" height="25" uuid="e37c1d82-7ebb-41b5-bfbb-366295a7345d">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="41ff8a8b-657d-4db5-a427-f526e82829ea"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{project_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="395" y="0" width="95" height="25" uuid="9189b5f8-74d6-434d-ab0f-c271be63b3f9">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="e970789a-3193-484e-93a6-9a3ed7baac64"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{posisi}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="490" y="0" width="66" height="25" uuid="78301299-a474-473f-b75b-95b8bb6faf5a">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="33e5e592-4764-41e7-9771-c6c0487a8c66"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{load}+"%"]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

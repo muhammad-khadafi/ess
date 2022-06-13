@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="sub_report_logActivityDetails" pageWidth="550" pageHeight="842" whenNoDataType="NoPages" columnWidth="550" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" whenResourceMissingType="Error" uuid="82c0e5c8-bb5f-47d1-a8ff-8a4c882ecc2e">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="idEmployee" class="java.lang.Integer"/>
+	<parameter name="months" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="years" class="java.lang.Integer" isForPrompting="false"/>
+	<parameter name="date_before" class="java.sql.Date"/>
+	<parameter name="date_after" class="java.sql.Date"/>
+	<queryString>
+		<![CDATA[select TO_CHAR(lad.date, 'DD-Mon-YYYY') as date_string, lad.activity_detail, lad.third_party, sp.code, COALESCE (sp.sub_project_name, '-') as sub_project_name, p.name as project_name, mr.name as position, lad.duration, lad.overtime, lad.spv_assigned
+from log_activity_detail_non_aj lad
+left join project_assignment pa on lad.project_assign_id = pa.id
+left join project  p on pa.project_id = p.id 
+left join sub_project sp on lad.sub_pro_id = sp.id
+left join master_reference mr on pa.role_id = mr.id
+where pa.employee_id =   $P{idEmployee}
+and lad.date between  $P{date_before}  and $P{date_after} 
+order by lad.date]]>
+	</queryString>
+	<field name="date_string" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="date_string"/>
+	</field>
+	<field name="activity_detail" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="activity_detail"/>
+	</field>
+	<field name="third_party" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="third_party"/>
+	</field>
+	<field name="code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="code"/>
+	</field>
+	<field name="sub_project_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="sub_project_name"/>
+	</field>
+	<field name="duration" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="duration"/>
+	</field>
+	<field name="overtime" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="overtime"/>
+	</field>
+	<field name="spv_assigned" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="spv_assigned"/>
+	</field>
+	<field name="project_name" class="java.lang.String"/>
+	<field name="position" class="java.lang.String"/>
+	<columnHeader>
+		<band height="21" splitType="Stretch">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+			<staticText>
+				<reportElement x="0" y="1" width="70" height="20" uuid="3d86dd6b-36f6-4771-a07f-246d344d2465">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="cf03786b-97c5-41c9-b76a-79b8afa52b3f"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph leftIndent="5" rightIndent="3"/>
+				</textElement>
+				<text><![CDATA[Tanggal]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="150" y="1" width="190" height="20" uuid="0f24b504-20a6-4d5d-b928-a3f8828dcddf">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7d9c05da-f41c-4093-ba6e-69bc71b6be4e"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph leftIndent="5" rightIndent="3"/>
+				</textElement>
+				<text><![CDATA[Kegiatan]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="340" y="1" width="106" height="20" uuid="e1f2e22f-3b3c-45f7-aba8-e2a06ccd47f7">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="67044c9f-238e-4b3d-b5b1-2bd965aeb6ff"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph leftIndent="5" rightIndent="3"/>
+				</textElement>
+				<text><![CDATA[Proyek]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="70" y="1" width="80" height="20" uuid="3d6bb846-689e-4ee2-b1c7-104aff2b009e">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="89e92904-4613-4753-badb-b0feac6ddab2"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Durasi (Jam)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="446" y="1" width="104" height="20" uuid="1bc6c568-1298-4bab-83e9-997f9e5977b1">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="67044c9f-238e-4b3d-b5b1-2bd965aeb6ff"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph leftIndent="5" rightIndent="3"/>
+				</textElement>
+				<text><![CDATA[Sub Proyek]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="28" splitType="Prevent">
+			<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.spreadsheet.SpreadsheetLayout"/>
+			<textField textAdjust="StretchHeight">
+				<reportElement stretchType="RelativeToTallestObject" x="0" y="0" width="70" height="28" uuid="3ff79990-3b44-489f-a649-433d3545c041">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="cf03786b-97c5-41c9-b76a-79b8afa52b3f"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<paragraph leftIndent="5" rightIndent="3" spacingBefore="3" spacingAfter="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{date_string}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement stretchType="RelativeToTallestObject" x="70" y="0" width="80" height="28" uuid="b22ca4bb-590d-40e8-8e73-fc4210b8816e">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="62216c71-3f76-416b-bd28-32f6aa106a5f"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{duration}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight">
+				<reportElement x="150" y="0" width="190" height="28" uuid="7d8c3ff0-33e0-4373-9e67-96d7b19bf213">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="3ab020bf-0156-43d3-aea7-f2fcb107a775"/>
+					<property name="com.jaspersoft.studio.unit.leftIndent" value="px"/>
+					<property name="com.jaspersoft.studio.unit.firstLineIndent" value="px"/>
+				</reportElement>
+				<box topPadding="5" bottomPadding="5">
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<paragraph firstLineIndent="0" leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{activity_detail}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement stretchType="RelativeToTallestObject" x="340" y="0" width="106" height="28" uuid="4baceb5b-b915-42e1-b4fa-1d504cdd0365">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="cd0a55e7-7bb8-4302-b038-fc7622a76187"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{project_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement stretchType="RelativeToTallestObject" x="446" y="0" width="104" height="28" uuid="a8b738b9-61cf-4584-ac28-febef1cd82a8">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="8db3818a-3653-4371-b240-3783e883fec2"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$F{sub_project_name}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

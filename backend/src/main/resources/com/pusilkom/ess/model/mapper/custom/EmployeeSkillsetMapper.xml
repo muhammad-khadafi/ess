@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.EmployeeSkillsetMapper">
+  <resultMap id="EmployeeItemResultMap" type="com.pusilkom.ess.dto.table.EmployeeSkillsetItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="employee_id" jdbcType="INTEGER" property="employeeId" />
+    <result column="skillset_id" jdbcType="INTEGER" property="skillsetId" />
+    <result column="skillset_name" jdbcType="VARCHAR" property="skillsetName" />
+  </resultMap>
+
+  <sql id="Main_Query">
+    SELECT eb.id as id, eb.employee_id as employee_id, eb.skillset_id as skillset_id, mr.name as skillset_name
+    FROM employee_skillset eb
+    LEFT JOIN master_reference mr on eb.skillset_id = mr.id
+  </sql>
+  <sql id="Criteria_Where_Clause">
+    <where>
+      <if test="searchForm.employeeId != null">
+        AND employee_id = #{searchForm.employeeId}
+      </if>
+    </where>
+
+    ${searchForm.orderQuery}
+  </sql>
+
+  <select id="getListEmployeeSkillsetItemBySearchForm" resultMap="EmployeeItemResultMap" parameterType="map">
+
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalEmployeeSkillsetItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+    ) as foo
+  </select>
+
+  <select id="checkDuplicate" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    select * from employee_skillset eb
+    where
+    eb.employee_id = #{searchForm.employeeId} and eb.skillset_id = #{searchForm.skillsetId}
+    <if test="searchForm.id != '' and searchForm.id != null">
+      AND eb.id != #{searchForm.id}
+    </if>
+    ) as foo
+
+  </select>
+
+</mapper>

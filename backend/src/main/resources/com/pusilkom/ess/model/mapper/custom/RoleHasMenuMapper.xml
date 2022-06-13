@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.RoleHasMenuMapper">
+  <resultMap id="CustomResultMap" type="com.pusilkom.ess.dto.table.RoleHasMenuItem">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="id_role" jdbcType="BIGINT" property="idRole" />
+    <result column="id_menu" jdbcType="BIGINT" property="idMenu" />
+    <result column="role_string" jdbcType="VARCHAR" property="roleString" />
+    <result column="menu_string" jdbcType="VARCHAR" property="menuString" />
+  </resultMap>
+
+  <sql id="Main_Query">
+    select distinct rhm.id_role
+    from role_has_menu rhm
+      left join menu m on rhm.id_menu = m.id
+  </sql>
+
+  <sql id="Criteria_Where_Clause">
+    <where>
+      <if test="searchForm.menuString != '' and searchForm.menuString != null">
+        AND upper(m.label) LIKE '%' || upper(#{searchForm.menuString}) || '%'
+      </if>
+      <if test="searchForm.idRole != '' and searchForm.idRole != null">
+        AND rhm.id_role = #{searchForm.idRole}
+      </if>
+    </where>
+    ${searchForm.orderQuery}
+  </sql>
+
+  <select id="getListRoleHasMenuBySearchForm" resultMap="CustomResultMap" parameterType="map">
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalRoleHasMenuBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+    ) as foo
+  </select>
+
+  <select id="getListUserWebHasRoleByIdUserweb" resultMap="CustomResultMap" parameterType="map">
+    <include refid="Main_Query"/>
+    where uhr.id_userweb = #{idUserweb}
+  </select>
+
+    <select id="getListRoleHasMenuByIdRole" resultMap="CustomResultMap" parameterType="map">
+        select rhm.*, r.label as role_string, m.label as menu_string
+        from role_has_menu rhm
+          left join role r on rhm.id_role = r.id
+          left join menu m on rhm.id_menu = m.id
+        where rhm.id_role = #{idRole}
+    </select>
+
+</mapper>
+
+

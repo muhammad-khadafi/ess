@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.ProjectAssignmentMapper">
+  <resultMap id="CustomResultMap" type="com.pusilkom.ess.dto.table.ProjectAssignmentItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="employee_id" jdbcType="INTEGER" property="employeeId" />
+    <result column="project_id" jdbcType="INTEGER" property="projectId" />
+    <result column="role_id" jdbcType="INTEGER" property="roleId" />
+    <result column="is_lead" jdbcType="BIT" property="isLead" />
+    <result column="load" jdbcType="INTEGER" property="load" />
+    <result column="start_date" jdbcType="DATE" property="startDate" />
+    <result column="end_date" jdbcType="DATE" property="endDate" />
+    <result column="created_date" jdbcType="TIMESTAMP" property="createdDate" />
+    <result column="created_by" jdbcType="INTEGER" property="createdBy" />
+    <result column="updated_date" jdbcType="TIMESTAMP" property="updatedDate" />
+    <result column="updated_by" jdbcType="INTEGER" property="updatedBy" />
+    <result column="level_id" jdbcType="INTEGER" property="levelId" />
+    <result column="flag_active" jdbcType="BIT" property="flagActive" />
+    <result column="employee_name" jdbcType="VARCHAR" property="employeeName" />
+    <result column="project_name" jdbcType="VARCHAR" property="projectName" />
+    <result column="role_name" jdbcType="VARCHAR" property="roleName" />
+    <result column="level_name" jdbcType="INTEGER" property="levelName" />
+    <result column="is_lead_string" jdbcType="VARCHAR" property="isLeadString" />
+    <result column="is_active_string" jdbcType="VARCHAR" property="isActiveString" />
+    <result column="start_date_string" jdbcType="VARCHAR" property="startDateString" />
+    <result column="end_date_string" jdbcType="VARCHAR" property="endDateString" />
+    <result column="load_string" jdbcType="VARCHAR" property="loadString" />
+    <result column="project_status" jdbcType="VARCHAR" property="projectStatus" />
+  </resultMap>
+
+  <select id="getListProjectAssignment" resultMap="CustomResultMap" parameterType="map">
+    select e."name" as employee_name, pa.employee_id
+    <if test="subMenuName == 'employee-logging'">
+      , pa.id
+    </if>
+    from project_assignment pa
+           left join employee e on pa.employee_id = e.id
+    where pa.project_id = #{idProject}
+    <if test="subMenuName == 'employee-logging'">
+      and extract(month from pa.start_date) = #{months}
+      and extract(year from pa.start_date) = #{years}
+    </if>
+    <if test="subMenuName != 'employee-logging'">
+    group by e."name", pa.employee_id
+    </if>
+    order by e."name"
+  </select>
+
+  <select id="getListProjectItemBySearchForm" resultMap="CustomResultMap" parameterType="map">
+
+    select o."name" as organization, p.*, m."name" as status, TO_CHAR(start_date, 'DD-MM-YYYY') as startdate, TO_CHAR(end_date, 'DD-MM-YYYY') as enddate
+    from project p
+    left join master_reference m on p.status_id = m.id
+    left join organization o on p.organization_id = o.id
+    where m.reference_type = 'Project Status'
+      <if test="searchForm.organizationId != '' and searchForm.organizationId != null">
+        AND organization_id = #{searchForm.organizationId}
+      </if>
+      <if test="searchForm.fundingType != '' and searchForm.fundingType != null">
+        AND funding_type = #{searchForm.fundingType}
+      </if>
+      <if test="searchForm.client != '' and searchForm.client != null">
+        AND upper(client) LIKE '%' || upper(#{searchForm.client}) || '%'
+      </if>
+      <if test="searchForm.statusId != '' and searchForm.statusId != null">
+        AND status_id = #{searchForm.statusId}
+      </if>
+    <if test="searchForm.name != '' and searchForm.name != null">
+      AND upper(name) LIKE '%' || upper(#{searchForm.name}) || '%'
+    </if>
+
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalProjectItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    project
+  </select>
+
+  <select id="getProjectItemByIdProject" resultMap="CustomResultMap" parameterType="map">
+
+    select o."name" as organization, p.*, m."name" as status, TO_CHAR(start_date, 'DD-MM-YYYY') as startdate, TO_CHAR(end_date, 'DD-MM-YYYY') as enddate
+    from project p
+    left join master_reference m on p.status_id = m.id
+    left join organization o on p.organization_id = o.id
+    where p.id = #{idProject} and
+    m.reference_type = 'Project Status'
+  </select>
+
+  <sql id="Main_Query">
+    select e."name" as employee_name, pa.*, p.name as project_name, mr.name as role_name, mr2.name as level_name, pa.load as load,
+    case when pa.is_lead is true then 'Yes' else 'No' end as is_lead_string,
+    case when pa.flag_active is true then 'Yes' else 'No' end as is_active_string,
+    concat_ws(' - ', TO_CHAR(pa.start_date, 'DD-MM-YYYY'), TO_CHAR(pa.end_date, 'DD-MM-YYYY')) as start_date_string,
+    concat(pa.load, '%') as load_string,
+    mr3."name" as project_status
+    from project_assignment pa
+    left join employee e on pa.employee_id = e.id
+    left join project p on pa.project_id = p.id
+    left join master_reference mr on mr.id = pa.role_id
+    left join master_reference mr2 on mr2.id = pa.level_id
+    left join master_reference mr3 on mr3.id = p.status_id
+  </sql>
+
+  <sql id="Criteria_Where_Clause">
+    <where>
+      <if test="searchForm.employeeId != '' and searchForm.employeeId != null">
+        AND e.id = #{searchForm.employeeId}
+      </if>
+      <if test="searchForm.projectId != '' and searchForm.projectId != null">
+        AND p.id = #{searchForm.projectId}
+      </if>
+      <if test="searchForm.roleId != '' and searchForm.roleId != null">
+        AND mr.id = #{searchForm.roleId}
+      </if>
+      <if test="searchForm.levelId != '' and searchForm.levelId != null">
+        AND mr2.id = #{searchForm.levelId}
+      </if>
+      <if test="searchForm.months != '' and searchForm.months != null">
+        and (((extract(month from pa.start_date) = #{searchForm.months} or (extract(month from pa.end_date) &gt;= #{searchForm.months} and extract(month from pa.start_date) &lt; extract(month from pa.end_date)))
+        and extract(year from pa.start_date) = #{searchForm.years})
+        or (extract(year from pa.end_date) &gt;= #{searchForm.years}
+        and (extract(year from pa.start_date) &lt; extract(year from pa.end_date)
+        and extract(month from pa.end_date) &gt;= #{searchForm.months})))
+      </if>
+    </where>
+
+    ${searchForm.orderQuery}
+  </sql>
+
+  <select id="getListProjectAssignmentBySearchForm" resultMap="CustomResultMap" parameterType="map">
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTablePaginationForHome" resultMap="CustomResultMap" parameterType="map">
+    <include refid="Main_Query"/>
+    where e.id = #{searchForm.employeeId}
+    and extract(month from pa.start_date) = #{searchForm.months}
+    and extract(year from pa.start_date) = #{searchForm.years}
+    ${searchForm.orderQuery}
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTablePaginationForHomePrev" resultMap="CustomResultMap" parameterType="map">
+    <include refid="Main_Query"/>
+    where e.id = #{searchForm.employeeId}
+    and (extract(month from pa.start_date)  &lt; #{searchForm.months} or extract(year from pa.start_date)  &lt; #{searchForm.years})
+    ${searchForm.orderQuery}
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalProjectAssignmentItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+    ) as foo
+  </select>
+
+  <select id="getProjectAssignmentById" resultMap="CustomResultMap" parameterType="map">
+    select e."name" as employee_name, pa.*, p.name as project_name, mr.name as role_name, mr2.name as level_name,
+    case when pa.is_lead is true then 'Yes' else 'No' end as is_lead_string,
+    case when pa.flag_active is true then 'Yes' else 'No' end as is_active_string,
+    TO_CHAR(pa.start_date, 'DD-MM-YYYY') as start_date_string, TO_CHAR(pa.end_date, 'DD-MM-YYYY') as end_date_string
+    from project_assignment pa
+    left join employee e on pa.employee_id = e.id
+    left join project p on pa.project_id = p.id
+    left join master_reference mr on mr.id = pa.role_id
+    left join master_reference mr2 on mr2.id = pa.level_id
+    where pa.id = #{projectAssignmentId}
+  </select>
+
+  <select id="getProjectAssignmentByIdEmployee" resultMap="CustomResultMap" parameterType="map">
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+  </select>
+
+  <select id="checkDuplicate" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    select * from project_assignment pa
+    where pa.project_id = #{searchForm.projectId}
+    and pa.employee_id = #{searchForm.employeeId}
+    and pa.role_id = #{searchForm.roleId}
+    and (extract(month from pa.start_date) = #{searchForm.months} or (extract(month from pa.end_date) &gt;= #{searchForm.months} and extract(month from pa.start_date) &lt; extract(month from pa.end_date)))
+    and extract(year from pa.start_date) = #{searchForm.years}
+    <if test="searchForm.id != '' and searchForm.id != null">
+      AND pa.id != #{searchForm.id}
+    </if>
+    ) as foo
+
+  </select>
+
+</mapper>
+
+

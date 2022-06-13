@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.RecapLogActivityReportMapper">
+  <resultMap id="CustomResultMap" type="com.pusilkom.ess.dto.table.RecapLogActivityReportItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="employee_id" jdbcType="INTEGER" property="employeeId" />
+    <result column="start_date" jdbcType="DATE" property="startDate" />
+    <result column="end_date" jdbcType="DATE" property="endDate" />
+    <result column="path" jdbcType="VARCHAR" property="path" />
+    <result column="sub_project_id" jdbcType="INTEGER" property="subProjectId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="sub_project_name" jdbcType="VARCHAR" property="subProjectName" />
+    <result column="startDateString" jdbcType="VARCHAR" property="startDateString" />
+    <result column="endDateString" jdbcType="VARCHAR" property="endDateString" />
+  </resultMap>
+  <sql id="Criteria_Where_Clause">
+    <where>
+      <if test="searchForm.idEmployee != null and searchForm.idEmployee != ''">
+        rlar.employee_id = #{searchForm.idEmployee}
+      </if>
+      <if test="searchForm.startDateString != null and searchForm.startDateString != ''">
+        AND to_char(start_date, 'DD-MM-YYYY') = #{searchForm.startDateString}
+      </if>
+      <if test="searchForm.endDateString != null and searchForm.endDateString != ''">
+        AND to_char(end_date, 'DD-MM-YYYY') = #{searchForm.endDateString}
+      </if>
+      <if test="searchForm.subProjectId != null and searchForm.subProjectId != ''">
+        AND sp.id = #{searchForm.subProjectId}
+      </if>
+    </where>
+  </sql>
+
+  <select id="getListRecapLogActivitytemBySearchForm" resultMap="CustomResultMap" parameterType="map">
+    select e.name as name, sp.code as sub_project_name, rlar.*, TO_CHAR(start_date, 'DD-Month-YYYY') as startDateString, TO_CHAR(end_date, 'DD-Month-YYYY') as endDateString
+    from recap_log_activity_report rlar
+    left join employee e  on rlar.employee_id = e.id
+    left join sub_project sp on rlar.sub_project_id = sp.id
+    <include refid="Criteria_Where_Clause"/>
+    ${searchForm.orderQuery}
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalReportLogActivityReportItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    select COUNT (rlar.id)
+    from recap_log_activity_report rlar
+    left join employee e  on rlar.employee_id = e.id
+    left join sub_project sp on rlar.sub_project_id = sp.id
+    <include refid="Criteria_Where_Clause"/>
+  </select>
+
+</mapper>
+
+

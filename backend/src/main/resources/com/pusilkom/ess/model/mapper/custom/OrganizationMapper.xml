@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.OrganizationMapper">
+    <resultMap id="OrganizationItemResultMap" type="com.pusilkom.ess.dto.table.OrganizationItem">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="type" jdbcType="VARCHAR" property="type" />
+        <result column="parent_id" jdbcType="INTEGER" property="parentId" />
+        <result column="is_active" jdbcType="BOOLEAN" property="isActive" />
+        <result column="parent_name" jdbcType="INTEGER" property="parentName" />
+    </resultMap>
+
+    <sql id="Main_Query">
+        select *, (select name from organization where id = org.parent_id) as parent_name from organization org
+    </sql>
+    <sql id="Criteria_Where_Clause">
+        <where>
+            <if test="organizationSearchForm.name != '' and organizationSearchForm.name != null">
+                AND upper(org.name) LIKE '%' || upper(#{organizationSearchForm.name}) || '%'
+            </if>
+            <if test="organizationSearchForm.type != '' and organizationSearchForm.type != null">
+                AND org.type = #{organizationSearchForm.type}
+            </if>
+            <if test="organizationSearchForm.isActive != null">
+                AND org.is_active = #{organizationSearchForm.isActive}
+            </if>
+            <if test="organizationSearchForm.parentId != null">
+                AND org.parent_id = #{organizationSearchForm.parentId}
+            </if>
+        </where>
+
+        ${organizationSearchForm.orderQuery}
+    </sql>
+
+    <select id="getListOrganizationItemBySearchForm" resultMap="OrganizationItemResultMap" parameterType="map">
+
+        <include refid="Main_Query"/>
+        <include refid="Criteria_Where_Clause"/>
+
+        OFFSET #{organizationSearchForm.from} - 1 LIMIT #{organizationSearchForm.perPage}
+    </select>
+
+    <select id="getTotalOrganizationItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+        SELECT COUNT(*) FROM
+        (
+        <include refid="Main_Query"/>
+        <include refid="Criteria_Where_Clause"/>
+        ) as foo
+    </select>
+
+</mapper>

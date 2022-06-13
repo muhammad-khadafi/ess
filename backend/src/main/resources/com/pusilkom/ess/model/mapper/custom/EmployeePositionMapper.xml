@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.EmployeePositionMapper">
+  <resultMap id="CustomResultMap" type="com.pusilkom.ess.dto.table.EmployeePositionItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="employee_id" jdbcType="INTEGER" property="employeeId" />
+    <result column="structure_id" jdbcType="INTEGER" property="structureId" />
+    <result column="start_date" jdbcType="DATE" property="startDate" />
+    <result column="end_date" jdbcType="DATE" property="endDate" />
+    <result column="birth_date" jdbcType="DATE" property="birthDate" />
+    <result column="is_active" jdbcType="BIT" property="isActive" />
+    <result column="notes" jdbcType="VARCHAR" property="notes" />
+    <result column="startdate" jdbcType="VARCHAR" property="startDateString" />
+    <result column="enddate" jdbcType="VARCHAR" property="endDateString" />
+    <result column="employeeName" jdbcType="VARCHAR" property="employeeName" />
+    <result column="structureName" jdbcType="VARCHAR" property="structureName" />
+    <result column="created_date" jdbcType="TIMESTAMP" property="createdDate" />
+    <result column="created_by" jdbcType="INTEGER" property="createdBy" />
+    <result column="updated_date" jdbcType="TIMESTAMP" property="updatedDate" />
+    <result column="updated_by" jdbcType="INTEGER" property="updatedBy" />
+  </resultMap>
+
+  <select id="getListEmployeePositionItemBySearchForm" resultMap="CustomResultMap" parameterType="map">
+
+    select e."name" as employeeName, o."name" as structureName, p.*, TO_CHAR(start_date, 'DD-MM-YYYY') as startdate, TO_CHAR(end_date, 'DD-MM-YYYY') as enddate, p.is_active as is_active
+    from employee_position p
+           left join employee e on p.employee_id = e.id
+           left join organization_structure o on p.structure_id = o.id
+    <where>
+      <if test="searchForm.employeeId != '' and searchForm.employeeId != null">
+        AND p.employee_id = #{searchForm.employeeId}
+      </if>
+      <if test="searchForm.structureId != '' and searchForm.structureId != null">
+        AND p.structure_id = #{searchForm.structureId}
+      </if>
+      <if test="searchForm.active != null">
+        AND p.is_active = #{searchForm.active}
+      </if>
+      <if test="searchForm.notes != '' and searchForm.notes != null">
+        AND upper(p.notes) LIKE '%' || upper(#{searchForm.notes}) || '%'
+      </if>
+    </where>
+
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalEmployeePositionItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+    ) as foo
+  </select>
+
+  <select id="getEmployeePositionByIdProject" resultMap="CustomResultMap" parameterType="map">
+
+    select e."name" as employeeName, o."name" as structureName, p.*, TO_CHAR(start_date, 'DD-MM-YYYY') as startdate, TO_CHAR(end_date, 'DD-MM-YYYY') as enddate, p.is_active as is_active
+    from employee_position p
+           left join employee e on p.employee_id = e.id
+           left join organization_structure o on p.structure_id = o.id
+    where p.id = #{id}
+  </select>
+
+  <select id="checkDuplicate" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    select * from employee_position pa
+    where
+    pa.structure_id = #{searchForm.structureId} and pa.employee_id = #{searchForm.employeeId}
+    <if test="searchForm.id != '' and searchForm.id != null">
+      AND pa.id != #{searchForm.id}
+    </if>
+    ) as foo
+
+  </select>
+
+  <sql id="Main_Query">
+    SELECT * FROM employee_position
+  </sql>
+  <sql id="Criteria_Where_Clause">
+    <where>
+      <if test="searchForm.employeeId != null">
+        AND employee_id = #{searchForm.employeeId}
+      </if>
+    </where>
+
+    ${searchForm.orderQuery}
+  </sql>
+</mapper>
+
+

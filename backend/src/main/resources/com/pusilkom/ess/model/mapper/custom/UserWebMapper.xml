@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.UserwebMapper">
+    <resultMap id="CustomResultMap" type="com.pusilkom.ess.dto.table.UserItem">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="username" jdbcType="INTEGER" property="username" />
+        <result column="flag_aktif" jdbcType="VARCHAR" property="flagAktif" />
+        <result column="employee_id" jdbcType="INTEGER" property="employeeId" />
+        <result column="name" jdbcType="VARCHAR" property="employeeName" />
+    </resultMap>
+
+    <sql id ="user_query">
+        select u.id, u.username, u.flag_aktif, e.name
+        from userweb u
+        left join employee e on u.employee_id = e.id
+    </sql>
+
+    <sql id ="user_whereclause">
+        <where>
+            <if test="searchForm.username != '' and searchForm.username != null">
+                AND upper(u.username) LIKE '%' || upper(#{searchForm.username}) || '%'
+            </if>
+            <if test="searchForm.employeeName != '' and searchForm.employeeName != null">
+                AND upper(e.name) LIKE '%' || upper(#{searchForm.employeeName}) || '%'
+            </if>
+            <if test="searchForm.flagAktif != '' and searchForm.flagAktif != null">
+                AND upper(u.flag_aktif) LIKE '%' || upper(#{searchForm.flagAktif}) || '%'
+            </if>
+        </where>
+        ${searchForm.orderQuery}
+    </sql>
+
+    <select id="getListUserItemBySearchForm" resultMap="CustomResultMap" parameterType="map">
+        <include refid="user_query"/>
+        <include refid="user_whereclause"/>
+        OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+    </select>
+
+    <select id="getTotalSubUserItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+        SELECT COUNT(*) FROM
+        (
+        <include refid="user_query"/>
+        <include refid="user_whereclause"/>
+        ) as foo
+    </select>
+
+    <select id="checkDuplicate" resultType="java.lang.Long" parameterType="map">
+        SELECT COUNT(*) FROM
+        (
+        select * from userweb u
+        where
+        u.username = #{userweb.username}
+        <if test="userweb.id != '' and userweb.id != null">
+            AND u.id != #{userweb.id}
+        </if>
+        ) as foo
+
+    </select>
+</mapper>

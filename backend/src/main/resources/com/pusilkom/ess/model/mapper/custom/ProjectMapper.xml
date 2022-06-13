@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.ProjectMapper">
+  <resultMap id="CustomResultMap" type="com.pusilkom.ess.dto.table.ProjectItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="organization_id" jdbcType="INTEGER" property="organizationId" />
+    <result column="organization" jdbcType="VARCHAR" property="organizationString" />
+    <result column="funding_type" jdbcType="VARCHAR" property="fundingType" />
+    <result column="client" jdbcType="VARCHAR" property="client" />
+    <result column="start_date" jdbcType="DATE" property="startDate" />
+    <result column="startdate" jdbcType="VARCHAR" property="startDateString" />
+    <result column="end_date" jdbcType="DATE" property="endDate" />
+    <result column="enddate" jdbcType="VARCHAR" property="endDateString" />
+    <result column="status_id" jdbcType="INTEGER" property="statusId" />
+    <result column="status" jdbcType="VARCHAR" property="statusString" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+  </resultMap>
+
+  <resultMap id="ProjectResultMap" type="com.pusilkom.ess.model.Project">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="organization_id" jdbcType="INTEGER" property="organizationId" />
+    <result column="funding_type" jdbcType="VARCHAR" property="fundingType" />
+    <result column="client" jdbcType="VARCHAR" property="client" />
+    <result column="start_date" jdbcType="DATE" property="startDate" />
+    <result column="end_date" jdbcType="DATE" property="endDate" />
+    <result column="status_id" jdbcType="INTEGER" property="statusId" />
+    <result column="created_date" jdbcType="TIMESTAMP" property="createdDate" />
+    <result column="created_by" jdbcType="INTEGER" property="createdBy" />
+    <result column="updated_date" jdbcType="TIMESTAMP" property="updatedDate" />
+    <result column="updated_by" jdbcType="INTEGER" property="updatedBy" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+  </resultMap>
+
+  <select id="getListProjectItemBySearchForm" resultMap="CustomResultMap" parameterType="map">
+
+    select o."name" as organization, p.*, m."name" as status, TO_CHAR(start_date, 'DD-MM-YYYY') as startdate, TO_CHAR(end_date, 'DD-MM-YYYY') as enddate
+    from project p
+    left join master_reference m on p.status_id = m.id
+    left join organization o on p.organization_id = o.id
+    where m.reference_type = 'Project Status'
+      <if test="searchForm.organizationId != '' and searchForm.organizationId != null">
+        AND organization_id = #{searchForm.organizationId}
+      </if>
+      <if test="searchForm.fundingType != '' and searchForm.fundingType != null">
+        AND funding_type = #{searchForm.fundingType}
+      </if>
+      <if test="searchForm.client != '' and searchForm.client != null">
+        AND upper(client) LIKE '%' || upper(#{searchForm.client}) || '%'
+      </if>
+      <if test="searchForm.statusId != '' and searchForm.statusId != null">
+        AND status_id = #{searchForm.statusId}
+      </if>
+    <if test="searchForm.name != '' and searchForm.name != null">
+      AND upper(p.name) LIKE '%' || upper(#{searchForm.name}) || '%'
+    </if>
+
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalProjectItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    project
+  </select>
+
+  <select id="getProjectItemByIdProject" resultMap="CustomResultMap" parameterType="map">
+
+    select o."name" as organization, p.*, m."name" as status, TO_CHAR(start_date, 'DD-MM-YYYY') as startdate, TO_CHAR(end_date, 'DD-MM-YYYY') as enddate
+    from project p
+    left join master_reference m on p.status_id = m.id
+    left join organization o on p.organization_id = o.id
+    where p.id = #{idProject} and
+    m.reference_type = 'Project Status'
+  </select>
+
+  <select id="getAllProjectNonAj" resultMap="ProjectResultMap">
+    select * from project where id != 3
+  </select>
+
+</mapper>
+
+

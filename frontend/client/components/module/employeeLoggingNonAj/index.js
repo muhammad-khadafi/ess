@@ -1,0 +1,5 @@
+export EmployeeLoggingNonAjForm from './EmployeeLoggingNonAjForm'
+export EmployeeLoggingNonAjList from './EmployeeLoggingNonAjList.vue'
+export EmployeeLoggingNonAjView from './EmployeeLoggingNonAjView.vue'
+export EmployeeLoggingNonAjUpdate from './EmployeeLoggingNonAjUpdate.vue'
+export EmployeeLoggingNonAjDelete from './EmployeeLoggingNonAjDelete.vue'

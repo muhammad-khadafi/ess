@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.EmployeeAttendanceMapper">
+    <resultMap id="EmployeeAttendanceItemResultMap" type="com.pusilkom.ess.dto.table.EmployeeAttendanceItem">
+        <result column="id" jdbcType="BIGINT" property="id" />
+        <result column="date" jdbcType="DATE" property="date" />
+        <result column="date_string" jdbcType="VARCHAR" property="dateString" />
+        <result column="clock_in" jdbcType="TIMESTAMP" property="clockIn" />
+        <result column="clock_in_location" jdbcType="VARCHAR" property="clockInLocation" />
+        <result column="check_in" jdbcType="VARCHAR" property="checkInString" />
+        <result column="clock_out" jdbcType="TIMESTAMP" property="clockOut" />
+        <result column="clock_out_location" jdbcType="VARCHAR" property="clockOutLocation" />
+        <result column="check_out" jdbcType="VARCHAR" property="checkOutString" />
+        <result column="activity_detail" jdbcType="VARCHAR" property="activityDetail" />
+        <result column="employee_id" jdbcType="INTEGER" property="employeeId" />
+        <result column="duration" jdbcType="REAL" property="duration" />
+    </resultMap>
+
+    <sql id="Main_Query">
+        SELECT *, TO_CHAR(date, 'DD-MM-YYYY') as date_string,
+        concat_ws(' | ', concat_ws(':', lpad(extract(hour from clock_in)::text, 2, '0'), lpad(extract(minute from clock_in)::text, 2, '0')), clock_in_location) as check_in,
+        concat_ws(' | ', concat_ws(':', lpad(extract(hour from clock_out)::text, 2, '0'), lpad(extract(minute from clock_out)::text, 2, '0')), clock_out_location) as check_out
+        FROM employee_attendance
+    </sql>
+    <sql id="Criteria_Where_Clause">
+        <where>
+            <if test="searchForm.employeeId == null or searchForm.employeeId == 0">
+                AND employee_id = 0
+            </if>
+            <if test="searchForm.employeeId != '' and searchForm.employeeId != null">
+                AND employee_id = #{searchForm.employeeId}
+            </if>
+            <if test="searchForm.months != '' and searchForm.months != null">
+                AND EXTRACT(MONTH FROM date) = #{searchForm.months}
+            </if>
+            <if test="searchForm.years != '' and searchForm.years != null">
+               AND EXTRACT(year FROM date) = #{searchForm.years}
+            </if>
+            <if test="searchForm.isValid != '' and searchForm.isValid != null">
+                AND is_valid = #{searchForm.isValid}
+            </if>
+        </where>
+
+        ${searchForm.orderQuery}
+    </sql>
+
+    <select id="getListEmployeeAttendance" resultMap="EmployeeAttendanceItemResultMap" parameterType="map">
+
+        <include refid="Main_Query"/>
+        <include refid="Criteria_Where_Clause"/>
+        OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+    </select>
+
+    <select id="getTotalEmployeeAttendance" resultType="java.lang.Long" parameterType="map">
+        SELECT COUNT(*) FROM
+        (
+        <include refid="Main_Query"/>
+        <include refid="Criteria_Where_Clause"/>
+        ) as foo
+    </select>
+
+    <select id="getAllListEmployeeAttendance" resultMap="EmployeeAttendanceItemResultMap" parameterType="map">
+
+        <include refid="Main_Query"/>
+        <include refid="Criteria_Where_Clause"/>
+    </select>
+
+    <resultMap id="EmployeeAttendanceResultMap" type="com.pusilkom.ess.model.EmployeeAttendance">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="date" jdbcType="DATE" property="date" />
+        <result column="clock_in" jdbcType="TIMESTAMP" property="clockIn" />
+        <result column="clock_in_location" jdbcType="VARCHAR" property="clockInLocation" />
+        <result column="clock_out" jdbcType="TIMESTAMP" property="clockOut" />
+        <result column="clock_out_location" jdbcType="VARCHAR" property="clockOutLocation" />
+        <result column="activity_detail" jdbcType="VARCHAR" property="activityDetail" />
+        <result column="employee_id" jdbcType="INTEGER" property="employeeId" />
+        <result column="duration" jdbcType="REAL" property="duration" />
+    </resultMap>
+
+    <select id="viewLog" resultMap="EmployeeAttendanceItemResultMap" parameterType="map">
+        <include refid="Main_Query"/>
+            where employee_id = #{id} and extract(month from date) = #{month} and extract(YEAR from date) = #{year}
+            and is_valid = true
+            order by date_string desc
+    </select>
+
+</mapper>

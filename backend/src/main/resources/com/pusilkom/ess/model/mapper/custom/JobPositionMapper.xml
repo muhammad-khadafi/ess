@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.JobPositionMapper">
+    <resultMap id="JobPositionItemResultMap" type="com.pusilkom.ess.dto.table.JobPositionItem">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="level" jdbcType="VARCHAR" property="level" />
+        <result column="is_active" jdbcType="BIT" property="isActive" />
+    </resultMap>
+
+    <sql id="Main_Query">
+        SELECT * FROM job_position
+    </sql>
+    <sql id="Criteria_Where_Clause">
+        <where>
+            <if test="searchForm.name != '' and searchForm.name != null">
+                AND upper(name) LIKE '%' || upper(#{searchForm.name}) || '%'
+            </if>
+            <if test="searchForm.level != '' and searchForm.level != null">
+                AND level = #{searchForm.level}
+            </if>
+            <if test="searchForm.isActive != null">
+                AND flag_aktif = #{searchForm.isActive}
+            </if>
+        </where>
+
+        ${searchForm.orderQuery}
+    </sql>
+
+    <select id="getListJobPositionItemBySearchForm" resultMap="JobPositionItemResultMap" parameterType="map">
+
+        <include refid="Main_Query"/>
+        <include refid="Criteria_Where_Clause"/>
+
+        OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+    </select>
+
+    <select id="getTotalJobPositionItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+        SELECT COUNT(*) FROM
+        (
+        <include refid="Main_Query"/>
+        <include refid="Criteria_Where_Clause"/>
+        ) as foo
+    </select>
+
+</mapper>

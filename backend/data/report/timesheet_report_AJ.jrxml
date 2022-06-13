@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="log_activity_details_report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="bc2330b0-d485-479a-992d-099b7ffa23a3">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Pre Production ESS"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="idEmployee" class="java.lang.Integer"/>
+	<parameter name="date_before" class="java.sql.Date"/>
+	<parameter name="date_after" class="java.sql.Date"/>
+	<parameter name="subreport_location" class="java.lang.String"/>
+	<parameter name="months" class="java.lang.Integer"/>
+	<parameter name="years" class="java.lang.Integer"/>
+	<parameter name="logo_arta_jasa" class="java.lang.String"/>
+	<parameter name="logo_pusilkom" class="java.lang.String"/>
+	<parameter name="sub_report_spv_location" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select e.name, (select count(*) from (select distinct lad.date from log_activity_detail lad 
+join project_assignment pa on lad.project_assign_id = pa.id 
+join employee e on pa.employee_id = e.id
+where pa.employee_id = $P{idEmployee}
+and lad.date between  $P{date_before}  and  $P{date_after} ) as sub) as hari
+from employee e
+where e.id = $P{idEmployee}
+limit 1]]>
+	</queryString>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+	</field>
+	<field name="hari" class="java.lang.String"/>
+	<pageHeader>
+		<band height="63" splitType="Stretch">
+			<staticText>
+				<reportElement x="140" y="3" width="280" height="30" uuid="2773aa3c-c3a8-439d-a22d-6cd054ca7f75"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Calibri" size="16" isBold="true" isItalic="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[EMPLOYEE TIMESHEET ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="232" y="23" width="100" height="22" uuid="77f1cbef-3454-4993-a608-075e1a7141e1"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Calibri" size="11" isBold="true" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[Log Kegiatan]]></text>
+			</staticText>
+			<line>
+				<reportElement x="7" y="53" width="549" height="1" uuid="d73ad54d-003d-43c8-82d5-2d477f4fe90b"/>
+			</line>
+			<image>
+				<reportElement x="475" y="-2" width="90" height="56" uuid="50512153-08a3-4751-96a5-12eb5149c4e2"/>
+				<imageExpression><![CDATA[$P{logo_pusilkom}]]></imageExpression>
+			</image>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="68" splitType="Stretch">
+			<textField>
+				<reportElement positionType="Float" x="81" y="5" width="190" height="18" uuid="0cc63eba-f67a-45ad-9a09-58b5afdd8921">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b0d9f039-62e1-41fc-b5bc-e1e70d578e8c"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<paragraph leftIndent="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="1" y="5" width="80" height="18" uuid="57f4bc51-52c2-4685-9181-0d720b5c6273">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b0d9f039-62e1-41fc-b5bc-e1e70d578e8c"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph leftIndent="3"/>
+				</textElement>
+				<text><![CDATA[Nama]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1" y="23" width="80" height="18" uuid="6301c4b6-6ae7-492b-897a-ef12cc215027">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7ad5c408-6562-4eec-84cd-118e89a2f706"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph leftIndent="3"/>
+				</textElement>
+				<text><![CDATA[Periode]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" x="81" y="23" width="190" height="18" uuid="a68909cd-97d9-4d37-a7b3-b8519d5a9342">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7ad5c408-6562-4eec-84cd-118e89a2f706"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<paragraph leftIndent="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd/MM/yyyy").format($P{date_before})+ " - "+ new SimpleDateFormat("dd/MM/yyyy").format($P{date_after})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="1" y="41" width="80" height="18" uuid="7dd7ccb0-cf1b-40fb-a84c-9cbd9e9e7218">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7ad5c408-6562-4eec-84cd-118e89a2f706"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+					<paragraph leftIndent="3"/>
+				</textElement>
+				<text><![CDATA[Jumlah Hari]]></text>
+			</staticText>
+			<textField>
+				<reportElement positionType="Float" x="81" y="41" width="190" height="18" uuid="bd7cdfc0-4820-47bb-bad6-90745dcc38da">
+					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="7ad5c408-6562-4eec-84cd-118e89a2f706"/>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<paragraph leftIndent="3"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{hari}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="201" splitType="Stretch">
+			<subreport>
+				<reportElement x="1" y="0" width="555" height="200" uuid="9c42bc75-1686-4640-bd16-580e811eb257"/>
+				<subreportParameter name="idEmployee">
+					<subreportParameterExpression><![CDATA[$P{idEmployee}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="date_before">
+					<subreportParameterExpression><![CDATA[$P{date_before}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="date_after">
+					<subreportParameterExpression><![CDATA[$P{date_after}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="subreport_location">
+					<subreportParameterExpression><![CDATA[$P{subreport_location}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA[$P{subreport_location}]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+</jasperReport>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.OrganizationStructureMapper">
+  <resultMap id="CustomResultMap" type="com.pusilkom.ess.dto.table.OrganizationStructureItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="parent_id" jdbcType="INTEGER" property="parentId" />
+    <result column="is_active" jdbcType="BIT" property="isActive" />
+    <result column="notes" jdbcType="VARCHAR" property="notes" />
+    <result column="organization_id" jdbcType="INTEGER" property="organizationId" />
+    <result column="position_id" jdbcType="INTEGER" property="positionId" />
+    <result column="created_date" jdbcType="TIMESTAMP" property="createdDate" />
+    <result column="created_by" jdbcType="INTEGER" property="createdBy" />
+    <result column="updated_date" jdbcType="TIMESTAMP" property="updatedDate" />
+    <result column="updated_by" jdbcType="INTEGER" property="updatedBy" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="parentName" jdbcType="VARCHAR" property="parentName" />
+    <result column="organizationName" jdbcType="VARCHAR" property="organizationName" />
+    <result column="jobPositionName" jdbcType="VARCHAR" property="jobPositionName" />
+  </resultMap>
+
+  <resultMap id="CustomResultMapDiagram" type="com.pusilkom.ess.dto.diagram.OrganizationStructureDiagram">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="parent_id" jdbcType="INTEGER" property="parentId" />
+    <result column="is_active" jdbcType="BIT" property="isActive" />
+    <result column="notes" jdbcType="VARCHAR" property="notes" />
+    <result column="organization_id" jdbcType="INTEGER" property="organizationId" />
+    <result column="position_id" jdbcType="INTEGER" property="positionId" />
+    <result column="created_date" jdbcType="TIMESTAMP" property="createdDate" />
+    <result column="created_by" jdbcType="INTEGER" property="createdBy" />
+    <result column="updated_date" jdbcType="TIMESTAMP" property="updatedDate" />
+    <result column="updated_by" jdbcType="INTEGER" property="updatedBy" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="organization_name" jdbcType="VARCHAR" property="organizationName" />
+    <result column="employee_name" jdbcType="VARCHAR" property="employeeName" />
+  </resultMap>
+
+  <select id="getListOrganizationStructureItemBySearchForm" resultMap="CustomResultMap" parameterType="map">
+
+    select s.*, t."name" as parentName
+    from organization_structure s
+      left join organization_structure t on s.parent_id = t.id
+      left join organization o on s.organization_id = o.id
+      left join job_position j on s.position_id = j.id
+    <where>
+      <if test="searchForm.parentId != '' and searchForm.parentId != null">
+        AND s.parent_id = #{searchForm.parentId}
+      </if>
+      <if test="searchForm.stringAktif != null">
+        AND s.is_active = #{searchForm.stringAktif}
+      </if>
+      <if test="searchForm.name != '' and searchForm.name != null">
+        AND upper(s.name) LIKE '%' || upper(#{searchForm.name}) || '%'
+      </if>
+      <if test="searchForm.notes != '' and searchForm.notes != null">
+        AND upper(s.notes) LIKE '%' || upper(#{searchForm.notes}) || '%'
+      </if>
+    </where>
+
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalOrganizationStructureItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+      organization_structure
+  </select>
+
+  <select id="getOrganizationStructureByIdProject" resultMap="CustomResultMap" parameterType="map">
+
+    select s.*, t."name" as parentName, o."name" as organizationName, j."name" as jobPositionName
+    from organization_structure s
+           left join organization_structure t on s.parent_id = t.id
+           left join organization o on s.organization_id = o.id
+           left join job_position j on s.position_id = j.id
+    where s.id = #{idOrganization}
+  </select>
+
+  <select id="getOrganizationStructureDiagram" resultMap="CustomResultMapDiagram" parameterType="map">
+    select os.id, parent_id, (select o.name from organization o where o.id = os.organization_id) as organization_name,
+    os.name,
+    (select em.name from employee em where em.id = ep.employee_id) as employee_name
+    from organization_structure os left join employee_position ep on os.id = ep.structure_id
+    where os.is_active = true
+    order by os.organization_id, os.id
+  </select>
+
+
+</mapper>
+
+

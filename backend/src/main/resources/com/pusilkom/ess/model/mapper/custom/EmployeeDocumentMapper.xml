@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pusilkom.ess.model.mapper.EmployeeDocumentMapper">
+  <resultMap id="EmployeeItemResultMap" type="com.pusilkom.ess.dto.table.EmployeeDocumentItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="employee_id" jdbcType="INTEGER" property="employeeId" />
+    <result column="document_id" jdbcType="INTEGER" property="documentId" />
+    <result column="document_type" jdbcType="VARCHAR" property="documentType" />
+    <result column="file_name" jdbcType="VARCHAR" property="fileName" />
+    <result column="upload_time" jdbcType="VARCHAR" property="uploadTime" />
+  </resultMap>
+
+  <sql id="Main_Query">
+    SELECT eb.id as id, eb.employee_id as employee_id, eb.document_id as document_id, mr.name as document_type, eb.file_name as file_name, eb.upload_time as upload_time
+    FROM employee_document eb
+    LEFT JOIN master_reference mr on eb.document_id = mr.id
+  </sql>
+  <sql id="Criteria_Where_Clause">
+    <where>
+      <if test="searchForm.employeeId != null">
+        AND employee_id = #{searchForm.employeeId}
+      </if>
+    </where>
+
+    ${searchForm.orderQuery}
+  </sql>
+
+  <select id="getListEmployeeDocumentItemBySearchForm" resultMap="EmployeeItemResultMap" parameterType="map">
+
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+
+    OFFSET #{searchForm.from} - 1 LIMIT #{searchForm.perPage}
+  </select>
+
+  <select id="getTotalEmployeeDocumentItemBySearchForm" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    <include refid="Main_Query"/>
+    <include refid="Criteria_Where_Clause"/>
+    ) as foo
+  </select>
+
+  <select id="checkDuplicate" resultType="java.lang.Long" parameterType="map">
+    SELECT COUNT(*) FROM
+    (
+    select * from employee_document eb
+    where
+    eb.employee_id = #{searchForm.employeeId} and eb.document_id = #{searchForm.documentId}
+    <if test="searchForm.id != '' and searchForm.id != null">
+      AND eb.id != #{searchForm.id}
+    </if>
+    ) as foo
+
+  </select>
+
+</mapper>
